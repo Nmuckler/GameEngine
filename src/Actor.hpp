@@ -5,8 +5,10 @@
 
 class Actor: public Object {
 public:
-    Actor(sf::Shape* shape, sf::Vector2f position, const std::string& texturePath);
-
+    Actor(sf::Shape* shape, sf::Vector2f position, const std::string& texturePath, int id);
+    int getId();
+private:
+    int id;
 };
 
 #endif

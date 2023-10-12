@@ -67,20 +67,21 @@ public:
         else if (i == 1) // id == 1
         {
 
-            try
-            {
-                std::unique_lock<std::mutex> cv_lock(*this->_mutex);
-                // manager->checkInputs(1, map[i]); // check input at clientID with given map input
-                for (int i = 1; i <= numClients; i++)
-                {
-                    // TEMP
-                    manager->checkInputs(i, map[i]);
-                }
-            }
-            catch (...)
-            {
-                std::cerr << "Thread " << i << " caught exception." << std::endl;
-            }
+            // try
+            // {
+            //     std::unique_lock<std::mutex> cv_lock(*this->_mutex);
+            //     // manager->checkInputs(1, map[i]); // check input at clientID with given map input
+            //     for (int i = 1; i <= numClients; i++)
+            //     {
+            //         // TEMP
+            //         manager->checkInputs(i, map[i]);
+            //         map[i] = '~'; // reset the input so you dont rubberband anywhere
+            //     }
+            // }
+            // catch (...)
+            // {
+            //     std::cerr << "Thread " << i << " caught exception." << std::endl;
+            // }
         }
         else if (i == 2)
         {
@@ -114,16 +115,16 @@ public:
                     // put this new character in the array
                     std::cout << "Client: " << numClients << " has been created" << std::endl;
                 }
-                else // recieved a num and a char
+                else // recieved client info PUBLISH INFOMARION
                 {
+                    std::cout << "Client: " << numClients << " pressed a new input" << std::endl;
                     int id;
                     char input;
                     const char *clientID_cstr = clientID.c_str();
                     sscanf(clientID_cstr, "%d %c", &id, &input);
+                    std::cout << "Id is: " << id << " and input is " << input << std::endl;
                     map[id] = input; // set the input of the character
-                    // std::cout << "Received an odd message...." << std::endl;
                 }
-                // std::unique_unlock<std::mutex> cv_lock(*this->_mutex);
             }
         }
     }
@@ -142,14 +143,9 @@ int main()
     std::mutex m;
     // Create a window
     sf::RenderWindow window(sf::VideoMode(800, 600), "Engine Window");
-    window.setFramerateLimit(60);
+    // window.setFramerateLimit(60);
     GameManager *manager = GameManager().getInstance();
     manager->initialize(); // initialize
-
-    // manager->createCharacter();
-    // numClients++;
-    // manager->createCharacter();
-    // numClients++;
 
     zmq::context_t context(2);
     zmq::socket_t publisher(context, zmq::socket_type::pub);
@@ -158,11 +154,11 @@ int main()
 
     std::cout << "Creating the server..." << std::endl;
     ThreadRunner t3(2, NULL, &m, manager);
-    std::thread third(run_wrapper, &t3);
+    std::thread third(run_wrapper, &t3); // third thread that constantly runs
 
+    ThreadRunner t1(0, NULL, &m, manager); //dtime stuff
+    ThreadRunner t2(1, NULL, &m, manager); //input stuff
 
-    ThreadRunner t1(0, NULL, &m, manager);
-    ThreadRunner t2(1, NULL, &m, manager);
 
     while (window.isOpen())
     {
@@ -182,7 +178,18 @@ int main()
         first.join();
         second.join();
 
+        //publish all positions and velicites; will have clients render
+        std::string allInfo = manager->allToString(manager->actorObjects);
+        publisher.send(zmq::buffer(allInfo), zmq::send_flags::none); //tell the clients the positions and velocities
+        //maybe have a wait or confirms from all the clients before continuing 
+
+
         manager->render(window);
+        
+        // if(allinfo != "")
+        //     std::cout << "info is: \n" << allinfo << std::endl;
+
+
     }
 
     return 0;

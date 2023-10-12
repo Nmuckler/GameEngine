@@ -5,7 +5,7 @@
 
 class GameObject: public Object {
 public:
-    GameObject(sf::Shape& shape, sf::Vector2f position, const std::string& texturePath);
+    GameObject(sf::Shape* shape, sf::Vector2f position, const std::string& texturePath);
 
     void hoverX(int x1, int x2, float speed);
 

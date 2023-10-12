@@ -48,23 +48,27 @@ void Object::move(float velX, float velY)
     velocityY = velY;
 }
 
-void Object::moveLeft(float velocity){
+void Object::moveLeft(float velocity)
+{
     velocityX = velocity * -1;
 }
-void Object::moveRight(float velocity){
+void Object::moveRight(float velocity)
+{
     velocityX = velocity;
 }
 
-void Object::moveUp(float velocity){
+void Object::moveUp(float velocity)
+{
     velocityY = velocity * -1;
 }
-void Object::moveDown(float velocity){
+void Object::moveDown(float velocity)
+{
     velocityY = velocity;
 }
 
 void Object::jump()
 {
-    velocityY = -4;
+    velocityY = -2;
 }
 
 bool Object::isTouchingFloor(const sf::Shape &object)
@@ -81,7 +85,8 @@ bool Object::isTouchingFloor(const sf::Shape &object)
     return false;
 }
 
-void Object::update(int64_t deltaTime){
+void Object::update(int64_t deltaTime)
+{
     double time = deltaTime;
     time /= 10;
 
@@ -94,18 +99,20 @@ void Object::update(int64_t deltaTime){
     }
 }
 
-void Object::update(int64_t deltaTime, bool grounded){
+void Object::update(int64_t deltaTime, bool grounded)
+{
 
     double time = deltaTime;
     // printf("Received time: %f\n", time);
-    time /= 10; //making it smaller to make it more digestable in the enviroment 
+    time /= 10; // making it smaller to make it more digestable in the enviroment
     // printf("Velocity x: %f\n", velocityX);
     // printf("Velocity y: %f\n", velocityY);
     // printf("Position x: %f\n", positionX);
     // printf("Position y: %f\n", positionY);
-
+    
     float newPosY = positionY + (velocityY * time);
-    if (velocityX < 1000 && velocityY < 1000 && newPosY < 10000 && time < 1000 && time >= 0)
+    float Ydelta = newPosY - positionY;
+    if (velocityX < 20 && velocityY < 15 && std::abs(Ydelta) < 100 && time < 100 && time >= 0)
     {
         getShape().setPosition(positionX + (velocityX * time), newPosY);
         positionX = positionX + (velocityX * time);
@@ -121,3 +128,4 @@ void Object::update(int64_t deltaTime, bool grounded){
         velocityX *= .5;
     }
 }
+

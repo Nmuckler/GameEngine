@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <sstream>
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 
@@ -35,7 +36,6 @@ public:
 
     void update(int64_t deltaT, bool grounded);
 
-    void staticUpdate(int64_t deltaT);
 
     sf::Shape &shape;
     sf::Texture texture;

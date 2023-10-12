@@ -26,6 +26,7 @@ int main()
     socket.connect("tcp://localhost:1235"); //connect to server thread
     subscriber.connect("tcp://localhost:2346"); //recieve updates from server
 
+
     std::string sendID = "-1";                               // Request a new client ID
     socket.send(zmq::buffer(sendID), zmq::send_flags::none); // send that to server
 

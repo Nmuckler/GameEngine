@@ -10,18 +10,6 @@ int64_t deltaTime = 0;
 bool grounded = true;
 double sentTime = 0;
 
-sf::CircleShape character1Circle(35.f);
-sf::CircleShape character2Circle(35.f);
-
-sf::RectangleShape line(sf::Vector2f(400.f, 500.f));
-sf::RectangleShape movingLine(sf::Vector2f(250.f, 30.f));
-
-// Actor character1 = Actor(character1Circle, sf::Vector2f(100, 450), "hamster.png");
-// Actor character2 = Actor(character2Circle, sf::Vector2f(250, 450), "hamster.png");
-
-GameObject _floor = GameObject(line, sf::Vector2f(0, 550), "");
-GameObject platform = GameObject(movingLine, sf::Vector2f(600, 550), "");
-
 GameManager *GameManager::singleton = nullptr;
 /**
  * Used https://www.geeksforgeeks.org/implementation-of-singleton-class-in-cpp/ for help
@@ -43,17 +31,14 @@ GameManager *GameManager::getInstance()
 void GameManager::initialize()
 {
 
-    // sf::CircleShape newActorCircle(35.f);
+    sf::RectangleShape *line = new sf::RectangleShape(sf::Vector2f(500.f, 2000.f));
+    sf::RectangleShape *movingLine = new sf::RectangleShape(sf::Vector2f(250.f, 30.f));
 
-    // sf::RectangleShape line(sf::Vector2f(800.f, 500.f));
-    // sf::RectangleShape movingLine(sf::Vector2f(250.f, 30.f));
+    GameObject *floor = new GameObject(line, sf::Vector2f(0, 550), "");
+    GameObject *platform = new GameObject(movingLine, sf::Vector2f(600, 550), "");
 
-    // Actor character = Actor(newActorCircle, sf::Vector2f(100, 500), "hamster.png");
-    // GameObject floor = GameObject(line, sf::Vector2f(0, 550), "");
-    // GameObject platform = GameObject(movingLine, sf::Vector2f(600, 550), "");
-
-    gameObjects.push_back(&_floor);
-    gameObjects.push_back(&platform);
+    gameObjects.push_back(floor);
+    gameObjects.push_back(platform);
 }
 
 void GameManager::updateDeltaTime()
@@ -73,32 +58,30 @@ void GameManager::createCharacter()
     printf("created a new character...\n");
     try
     {
-        sf::CircleShape *newActorCircle =  new sf::CircleShape(35.f);
-        Actor *character = new Actor(newActorCircle, sf::Vector2f(100, 450), "hamster.png");
+        sf::CircleShape *newActorCircle = new sf::CircleShape(35.f);
+        Actor *character = new Actor(newActorCircle, sf::Vector2f(100, 450), "hamster.png", actorObjects.size() + 1);
         actorObjects.push_back(character);
-        // if (actorObjects.size() == 1)
-        // {
-        //     actorObjects.push_back(&character1);
-        // } else {
-        //     actorObjects.push_back(&character1);
-        // }
+        numClients++;
     }
     catch (...)
     {
         std::cerr << "Character caught exception." << std::endl;
     }
-    // sf::CircleShape newActorCircle(35.f);
-    // Actor character = Actor(newActorCircle, sf::Vector2f(100, 500), "hamster.png");
-    // actorObjects.push_back(&character);
 }
 
-void GameManager::checkInputs(int i, char input)
+void GameManager::checkInputs(sf::RenderWindow *window, int i)
 {
     int id = i - 1;
     // printf("The size of actor objects is: %ld\n", actorObjects.size());
-    for (int i = 0; i < actorObjects.size(); i++)
+    // for (int i = 0; i < actorObjects.size(); i++)
+    // {
+    // printf("Checking inputs for actor %d", i);
+
+    if (!window->hasFocus())
+        return;
+
+    if (id >= 0 && id < actorObjects.size())
     {
-        // printf("Checking inputs for actor %d", i);
 
         // compute grounded
         if (actorObjects[id]->isTouchingFloor(gameObjects[0]->getShape()) || actorObjects[id]->isTouchingFloor(gameObjects[1]->getShape()))
@@ -111,18 +94,13 @@ void GameManager::checkInputs(int i, char input)
         {
             grounded = false;
         }
-        // Gravity
-        // if (actorObjects[id].isTouchingFloor(gameObjects[0].getShape()) || actorObjects[id].isTouchingFloor(gameObjects[1].getShape()))
-        // {
-        //     actorObjects[id].velocityY = 0;
-        // }
 
         // Turn hit boxes on or off
-        if (input == 'H')
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::H))
         {
             hitboxActive = !hitboxActive;
         }
-        if (input == 'P')
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
         {
             if (!timeline.isPaused())
             {
@@ -134,34 +112,34 @@ void GameManager::checkInputs(int i, char input)
                 timeline.unpause();
             }
         }
-        if (input == '1')
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
         {
             printf("one pressed");
             timeline.changeTic(4);
         }
-        if (input == '2')
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
         {
             printf("two pressed");
             timeline.changeTic(2);
         }
-        if (input == '3')
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
         {
             printf("three pressed");
             timeline.changeTic(1);
         }
 
         // Controls
-        if (input == 'L')
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
         {
             // Left key is pressed: move our character to the left
             actorObjects[id]->moveLeft(moveSpeed);
         }
-        if (input == 'R')
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
         {
             // Right key is pressed: move our character to the right
             actorObjects[id]->moveRight(moveSpeed);
         }
-        if (input == ' ')
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
         {
             if (grounded)
             {
@@ -169,26 +147,111 @@ void GameManager::checkInputs(int i, char input)
             }
         }
     }
+    else
+    {
+        // Handle the out-of-bounds case (e.g., print an error message)
+        std::cout << "Invalid actor ID: " << id << std::endl;
+    }
 }
 
-void GameManager::render(sf::RenderWindow &window)
+void GameManager::parsePos(std::string str, int clientID)
+{
+    std::istringstream iss(str);
+    std::string clientData;
+
+    while (std::getline(iss, clientData, '|'))
+    {
+        // Check if this is client data or platform data
+        if (clientData.substr(0, 8) == "platform")
+        {
+            float platformX, platformY;
+            if (sscanf(clientData.c_str() + 8, "%f,%f", &platformX, &platformY) == 2)
+            {
+                gameObjects[1]->getShape().setPosition(platformX, platformY);
+                // std::cout << "Set position to: " << platformY << std::endl;
+            }
+        }
+        else
+        {
+            int id;
+            float xpos, ypos;
+
+            if (sscanf(clientData.c_str(), "%d,%f,%f", &id, &xpos, &ypos) == 3)
+            {
+                if (id != clientID)
+                {
+                    while (id > actorObjects.size())
+                    {
+                        createCharacter();
+                    }
+                    actorObjects[id - 1]->getShape().setPosition(xpos, ypos);
+                }
+            }
+        }
+    }
+}
+// void GameManager::parsePos(std::string str, int clientID)
+// {
+//     std::istringstream iss(str);
+//     std::string clientData;
+
+//     while (std::getline(iss, clientData, '|'))
+//     {
+//         int id;
+//         float xpos, ypos;
+
+//         if (sscanf(clientData.c_str(), "%d,%f,%f", &id, &xpos, &ypos) == 3)
+//         {
+//             if (id != clientID)
+//             {
+//                 while (id > actorObjects.size())
+//                 {
+//                     createCharacter();
+//                 }
+//                 actorObjects[id - 1]->getShape().setPosition(xpos, ypos);
+//             }
+//         }
+//     }
+// }
+
+std::string GameManager::toString(int id)
+{
+    int idx = id - 1;
+    std::string stream = "";
+    stream += std::to_string(actorObjects[idx]->getId()) + "," + std::to_string(actorObjects[idx]->positionX) + "," + std::to_string(actorObjects[idx]->positionY) + "|";
+
+    return stream;
+}
+
+std::string GameManager::allToString()
+{
+    std::string stream = ""; // Initialize the stream
+
+    for (int i = 1; i <= actorObjects.size(); i++)
+    {
+        stream += toString(i);
+    }
+
+    return stream;
+}
+
+void GameManager::render(sf::RenderWindow &window, int clientID)
 {
     window.clear(sf ::Color::White);
 
-    gameObjects[1]->hoverY(200, 550, .5);
-    // gameObjects[0].hoverX(200, 550, .5);
+    // gameObjects[1]->hoverY(200, 550, .5);
 
     if (!timeline.isPaused())
     {
-        // printf("sentTime: %lf\n", sentTime);
-        for (int i = 0; i < actorObjects.size(); i++)
-        {
-            actorObjects[i]->update(sentTime, grounded);
-        }
-        for (int i = 0; i < gameObjects.size(); i++)
-        {
-            gameObjects[i]->update(sentTime);
-        }
+        actorObjects[clientID - 1]->update(sentTime, grounded);
+
+        // if (clientID == 1) //other clients get platform info from another client
+        // {
+        //     for (int i = 0; i < gameObjects.size(); i++)
+        //     {
+        //         gameObjects[i]->update(sentTime);
+        //     }
+        // }
     }
     // Draw the character
     for (int i = 0; i < actorObjects.size(); i++)

@@ -1,7 +1,7 @@
 #include "GameObject.hpp"
 
-GameObject::GameObject(sf::Shape& shape, sf::Vector2f position, const std::string& texturePath):
-Object(shape, position, texturePath) {
+GameObject::GameObject(sf::Shape* shape, sf::Vector2f position, const std::string& texturePath):
+Object(*shape, position, texturePath) {
     this->moveX = true;
     this->moveY = true;
 }
