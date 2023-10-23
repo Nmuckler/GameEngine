@@ -69,6 +69,10 @@ void GameManager::createCharacter()
     }
 }
 
+void GameManager:: deleteCharacter(int id)
+{
+}
+
 void GameManager::checkInputs(sf::RenderWindow *window, int i)
 {
     int id = i - 1;

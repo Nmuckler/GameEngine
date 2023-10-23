@@ -24,6 +24,7 @@ public:
     void initialize();
     void updateDeltaTime();
     void createCharacter();
+    void deleteCharacter(int id);
     void checkInputs(sf::RenderWindow *window, int id); //check input for the specific Client runnning
     void parsePos(std::string str, int clientID);
     void render(sf::RenderWindow &window, int clientID);

@@ -94,8 +94,8 @@ public:
                 socket.recv(request, zmq::recv_flags::none); // wait to recieve a message from a client
                 // std::unique_lock<std::mutex> cv_lock(*this->_mutex);
                 std::string input(static_cast<char *>(request.data()), request.size()); // parse that as a string
-
                 // Send the client's Id to the client
+                const char *input_cstr = input.c_str();
                 if (input == "-1")                                           // this should be -1
                 {                                                            // Compare clientID as a string
                     std::string sendID = std::to_string(numClients + 1);     // the clients new id (we start at 0)
@@ -104,24 +104,28 @@ public:
 
                     map[numClients + 1] = "";
 
-
                     // // TEMP
                     numClients++;
 
                     // put this new character in the array
                     std::cout << "Client: " << numClients << " has been created" << std::endl;
                 }
+                else if (strlen(input_cstr) == 2)
+                {
+                    int id;
+                    sscanf(input_cstr, "%d", &id);
+                    std::cout << "Client: " << id << " has been deleted (not really)" << std::endl;
+                }
                 else // recieved client info PUBLISH INFOMARION
                 {
                     int id;
                     // char input;
-                    const char *input_cstr = input.c_str();
-                    sscanf(input_cstr, "%d", &id);
+                    sscanf(input_cstr, "%d", &id); // scan the first number which is the id
                     // std::cout << "Id is: " << id << std::endl;
-                    map[id] = input; // set the input of the character
-                    if (id == 1)
+                    map[id] = input; // set the data at that id
+                    if (id == 1) //update the platform whenever the host pings the server; In this case the host is client 1
                     {
-                        hoverY(200, 550, .5);
+                        hoverY(200, 550, .5); //
                     }
                 }
             }
@@ -163,7 +167,7 @@ int main()
                 allInfo += map[i];
             }
         }
-
+        // hoverY(200, 550, .5); //
         allInfo += "platform" + std::to_string(platX) + "," + std::to_string(platY);
         // std::cout << "Published: \n" << allInfo << std::endl;
         publisher.send(zmq::buffer(allInfo), zmq::send_flags::none);

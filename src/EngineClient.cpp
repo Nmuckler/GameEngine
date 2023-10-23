@@ -149,6 +149,9 @@ int main()
                 // "Close requested" event: we close the window
                 if (event.type == sf::Event::Closed)
                 {
+                    zmq::socket_t cancel(context, zmq::socket_type::req);
+                    cancel.connect("tcp://localhost:8888"); // connect to server thread
+                    cancel.send(zmq::buffer("c" + std::to_string(clientID)), zmq::send_flags::none);
                     window.close();
                 }
             }
@@ -156,24 +159,15 @@ int main()
             std::thread first(run_wrapper, &t1);
             std::thread second(run_wrapper, &t2);
 
-            second.join();
             if (clientID > 0)
                 manager->checkInputs(&window, clientID);
 
-            std::string newPos = manager->toString(clientID);
-            // newPos += "platform," + std::to_string(manager->gameObjects[1]->positionX) + "," + std::to_string(manager->gameObjects[1]->positionY);
+            std::string newPos = manager->toString(clientID); // send out position
 
-            // std::cout << "sent: \n"
-            //           << newPos << std::endl;
             socket.send(zmq::buffer(newPos), zmq::send_flags::none); // send client info to server
 
-            // zmq::message_t update; // get the update
-            // subscriber.recv(update, zmq::recv_flags::none);
-            // std::string updateMessage(static_cast<const char *>(update.data()), update.size());
-            // // std::cout << "received: \n"
-            // //           << updateMessage << std::endl;
-            // manager->parsePos(updateMessage, clientID);
-            first.join();
+            first.join();  // receive data
+            second.join(); // update delatime
 
             manager->render(window, clientID);
         }
