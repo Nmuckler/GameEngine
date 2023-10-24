@@ -105,17 +105,17 @@ void GameManager::checkInputs()
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
         {
-            printf("one pressed");
+            // printf("one pressed");
             timeline.changeTic(4);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
         {
-            printf("two pressed");
+            // printf("two pressed");
             timeline.changeTic(2);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
         {
-            printf("three pressed");
+            // printf("three pressed");
             timeline.changeTic(1);
         }
 

@@ -24,38 +24,39 @@
 #define sleep(n) Sleep(n)
 #endif
 
-bool moveY = true;
-float platX = 600;
-float platY = 550;
+int host;
 
-void hoverY(int y1, int y2, float speed)
+bool moveY = true;
+float valY = 0;
+
+void hoverY(int min, int max, float speed)
 {
     // Make sure x1 is the lower value
-    int newy1 = std::min(y1, y2);
-    int newy2 = std::max(y1, y2);
+
     float newSpeed = std::abs(speed);
 
     // True if moving up
     if (moveY)
     {
-        if (platY <= newy1)
+        if (valY <= min)
         { // Position is lower than the lower bound
             moveY = !moveY;
         }
         else
         {
-            platY -= newSpeed;
+            valY -= newSpeed;
         }
     }
     else
     {
-        if (platY >= newy2)
+        if (valY >= max)
         { // Position is higher than the higher bound
             moveY = !moveY;
         }
         else
         {
-            platY += newSpeed;
+            // printf("%f is less than %d\n", valY, max);
+            valY += newSpeed;
         }
     }
 }
@@ -114,6 +115,7 @@ public:
                 {
                     int id;
                     sscanf(input_cstr, "%d", &id);
+                    map[id] = ""; // set the map info to an empty string
                     std::cout << "Client: " << id << " has been deleted (not really)" << std::endl;
                 }
                 else // recieved client info PUBLISH INFOMARION
@@ -123,9 +125,9 @@ public:
                     sscanf(input_cstr, "%d", &id); // scan the first number which is the id
                     // std::cout << "Id is: " << id << std::endl;
                     map[id] = input; // set the data at that id
-                    if (id == 1) //update the platform whenever the host pings the server; In this case the host is client 1
+                    if (id == 1)     // update the platform whenever the host pings the server; In this case the host is client 1
                     {
-                        hoverY(200, 550, .5); //
+                        hoverY(0, 300, .5); //
                     }
                 }
             }
@@ -167,8 +169,12 @@ int main()
                 allInfo += map[i];
             }
         }
-        // hoverY(200, 550, .5); //
-        allInfo += "platform" + std::to_string(platX) + "," + std::to_string(platY);
+
+        float newY = 550 - valY;
+        float newX = 600 - valY;
+        allInfo += "platform1" + std::to_string(600) + "," + std::to_string(newY) + "|";
+        allInfo += "platform2" + std::to_string(newX) + "," + std::to_string(200) + "|";
+
         // std::cout << "Published: \n" << allInfo << std::endl;
         publisher.send(zmq::buffer(allInfo), zmq::send_flags::none);
 

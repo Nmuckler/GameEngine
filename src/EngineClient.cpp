@@ -63,7 +63,7 @@ public:
                 std::string updateMessage(static_cast<const char *>(update.data()), update.size());
                 // std::cout << "received: \n"
                 //           << updateMessage << std::endl;
-                manager->parsePos(updateMessage, clientID);
+                manager->parsePos(updateMessage);
 
                 // process inputs from game manager
             }
@@ -94,8 +94,11 @@ int main()
     sf::RenderWindow window(sf::VideoMode(800, 600), "Client Window");
     window.setFramerateLimit(60);
 
+    sf::View view(sf::Vector2f(100.0f, 300.0f), sf::Vector2f(800.0f, 600.0f));
+    // window.setView(view);
+
     GameManager *manager = GameManager().getInstance();
-    manager->initialize(); // initialize
+    manager->initialize(&view); // initialize
 
     // server stuff
     zmq::context_t context(1);
@@ -104,6 +107,7 @@ int main()
     std::cout << "Connecting to the server..." << std::endl;
     socket.connect("tcp://localhost:8888"); // connect to server thread
 
+    // send -1 to server to let it know it needs an id
     std::string sendID = "-1";                               // Request a new client ID
     socket.send(zmq::buffer(sendID), zmq::send_flags::none); // send that to server
 
@@ -120,15 +124,12 @@ int main()
     // create clients that were created before it and create new client
     while (manager->numClients < clientID)
     {
-        manager->createCharacter();
+        manager->createCharacter(clientID);
     }
+    manager->setBounds();
 
     ThreadRunner t1(0, NULL, &m, manager, clientID); // dtime stuff
     ThreadRunner t2(1, NULL, &m, manager, clientID); // input stuff
-
-    // ThreadRunner t1; // Create a thread
-    // std::thread first(run_wrapper, &t1);
-
     try
     {
         while (window.isOpen())
@@ -156,11 +157,12 @@ int main()
                 }
             }
 
+            // wait for threads to finish
             std::thread first(run_wrapper, &t1);
             std::thread second(run_wrapper, &t2);
 
             if (clientID > 0)
-                manager->checkInputs(&window, clientID);
+                manager->checkInputs(&window);
 
             std::string newPos = manager->toString(clientID); // send out position
 
@@ -168,8 +170,8 @@ int main()
 
             first.join();  // receive data
             second.join(); // update delatime
-
-            manager->render(window, clientID);
+            // manager->updateView();
+            manager->render(window);
         }
     }
     catch (const zmq::error_t &e) // testing for zmq errors

@@ -4,11 +4,15 @@ Object::Object(sf::Shape &shape, sf::Vector2f position, const std::string &textu
 {
     if (texturePath == "")
     {
-        this->shape.setFillColor(sf::Color(250, 0, 0));
+        this->shape.setFillColor(sf::Color::Red);
+    }
+    else if (colorMap.find(texturePath) != colorMap.end())
+    {
+        this->shape.setFillColor(colorMap.at(texturePath));
     }
     else if (!texture.loadFromFile(texturePath))
     {
-        this->shape.setFillColor(sf::Color(250, 0, 0));
+        this->shape.setFillColor(sf::Color::Magenta);
     }
     else
     {
@@ -68,17 +72,17 @@ void Object::moveDown(float velocity)
 
 void Object::jump()
 {
-    velocityY = -2;
+    velocityY = -4;
 }
 
-bool Object::isTouchingFloor(const sf::Shape &object)
+bool Object::isTouching(const sf::Shape &object)
 {
     sf::FloatRect actorBounds = this->shape.getGlobalBounds();
     sf::FloatRect otherBounds = object.getGlobalBounds();
 
     if (actorBounds.intersects(otherBounds))
     {
-        velocityY = 0;
+        // velocityY = 0;
         // printf("I am colliding");
         return true;
     }
@@ -105,11 +109,11 @@ void Object::update(int64_t deltaTime, bool grounded)
     double time = deltaTime;
     // printf("Received time: %f\n", time);
     time /= 10; // making it smaller to make it more digestable in the enviroment
-    // printf("Velocity x: %f\n", velocityX);
-    // printf("Velocity y: %f\n", velocityY);
+    // printf("Velocity x: %f\n", velocityX * time);
+    // printf("Velocity y: %f\n", velocityY * time);
     // printf("Position x: %f\n", positionX);
     // printf("Position y: %f\n", positionY);
-    
+
     float newPosY = positionY + (velocityY * time);
     float Ydelta = newPosY - positionY;
     if (velocityX < 20 && velocityY < 15 && std::abs(Ydelta) < 100 && time < 100 && time >= 0)
@@ -128,4 +132,3 @@ void Object::update(int64_t deltaTime, bool grounded)
         velocityX *= .5;
     }
 }
-

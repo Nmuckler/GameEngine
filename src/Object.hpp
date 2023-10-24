@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <string>
 #include <sstream>
+#include <map>
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 
@@ -16,9 +17,11 @@ public:
 
     sf::Shape &getShape();
 
+    bool colorExists(const std::string &texturePath);
+
     void draw(sf::RenderWindow &window, bool drawBoundingBox);
 
-    bool isTouchingFloor(const sf::Shape &object);
+    bool isTouching(const sf::Shape &object);
 
     void move(float velX, float velY);
 
@@ -36,6 +39,16 @@ public:
 
     void update(int64_t deltaT, bool grounded);
 
+    const std::map<std::string, sf::Color> colorMap = {
+        {"Black", sf::Color::Black},
+        {"White", sf::Color::White},
+        {"Red", sf::Color::Red},
+        {"Green", sf::Color::Green},
+        {"Blue", sf::Color::Blue},
+        {"Yellow", sf::Color::Yellow},
+        {"Magenta", sf::Color::Magenta},
+        {"Cyan", sf::Color::Cyan},
+        {"Transparent", sf::Color::Transparent}};
 
     sf::Shape &shape;
     sf::Texture texture;
