@@ -84,12 +84,8 @@ void GameManager::createCharacter(int id)
     {
         sf::CircleShape *newActorCircle = new sf::CircleShape(35.f);
         Actor *character = new Actor(newActorCircle, sf::Vector2f(100, 450), "hamster.png", ++numClients);
-        // actorObjects.push_back(character);
-        // numClients++;
         actorMap[numClients] = character;
         std::cerr << "Created client:" << numClients << std::endl;
-
-
     }
     catch (...)
     {
@@ -99,12 +95,13 @@ void GameManager::createCharacter(int id)
 
 void GameManager::deleteCharacter(int id)
 {
+    actorMap[id]->getShape().setFillColor(sf::Color::Transparent);
 }
 
-void GameManager::checkInputs(sf::RenderWindow *window)
+bool GameManager::checkInputs(sf::RenderWindow *window)
 {
     int idx = clientID;
-
+    bool newInput = false;
 
     if (idx >= 0 && clientID <= actorMap.size())
     {
@@ -130,13 +127,14 @@ void GameManager::checkInputs(sf::RenderWindow *window)
 
         if (!window->hasFocus())
         {
-            return;
+            return false;
         }
 
         // Turn hit boxes on or off
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::H))
         {
             hitboxActive = !hitboxActive;
+            newInput = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
         {
@@ -149,38 +147,45 @@ void GameManager::checkInputs(sf::RenderWindow *window)
             {
                 timeline.unpause();
             }
+            newInput = true;
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
         {
             // printf("one pressed");
             timeline.changeTic(4);
+            newInput = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
         {
             // printf("two pressed");
             timeline.changeTic(2);
+            newInput = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
         {
             // printf("three pressed");
             timeline.changeTic(1);
+            newInput = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
         {
             actorMap[idx]->setSpawn(actorMap[idx]->positionX, actorMap[idx]->positionY);
+            newInput = true;
         }
 
         // Controls
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
         {
             // Left key is pressed: move our character to the left
             actorMap[idx]->moveLeft(moveSpeed);
+            newInput = true;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
         {
             // Right key is pressed: move our character to the right
             actorMap[idx]->moveRight(moveSpeed);
+            newInput = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
         {
@@ -188,6 +193,7 @@ void GameManager::checkInputs(sf::RenderWindow *window)
             {
                 actorMap[idx]->jump();
             }
+            newInput = true;
         }
     }
     else
@@ -195,6 +201,7 @@ void GameManager::checkInputs(sf::RenderWindow *window)
         // Handle the out-of-bounds case (e.g., print an error message)
         std::cout << "Invalid actor ID: " << idx << std::endl;
     }
+    return newInput;
 }
 
 void GameManager::parsePos(std::string str)
@@ -221,6 +228,15 @@ void GameManager::parsePos(std::string str)
             {
                 gameObjects[2]->getShape().setPosition(platformX, platformY);
                 // std::cout << "Set position to: " << platformY << std::endl;
+            }
+        }
+        else if (clientData.substr(0, 7) == "deleted")
+        {
+            int deletedId;
+            if (sscanf(clientData.c_str() + 7, "%d", &deletedId) == 1)
+            {
+                // std::cout << "Deleting client: " << deletedId << std::endl;
+                deleteCharacter(deletedId);
             }
         }
         else
@@ -256,9 +272,9 @@ std::string GameManager::allToString()
 {
     std::string stream = ""; // Initialize the stream
 
-    for (int i = 1; i <= actorMap.size(); i++)
+    for (auto it = actorMap.begin(); it != actorMap.end(); ++it)
     {
-        stream += toString(i);
+        stream += toString(it->first);
     }
 
     return stream;
@@ -307,24 +323,14 @@ void GameManager::render(sf::RenderWindow &window)
     updateView();
     window.clear(sf ::Color::Black);
 
-    // gameObjects[1]->hoverY(200, 550, .5);
-
     if (!timeline.isPaused())
     {
         actorMap[clientID]->update(sentTime, grounded);
-
-        // if (clientID == 1) //other clients get platform info from another client
-        // {
-        //     for (int i = 0; i < gameObjects.size(); i++)
-        //     {
-        //         gameObjects[i]->update(sentTime);
-        //     }
-        // }
     }
     // Draw the character
-    for (int i = 1; i <= actorMap.size(); i++)
+    for (auto it = actorMap.begin(); it != actorMap.end(); ++it)
     {
-        actorMap[i]->draw(window, hitboxActive);
+        actorMap[it->first]->draw(window, hitboxActive);
     }
     for (int i = 0; i < gameObjects.size(); i++)
     {

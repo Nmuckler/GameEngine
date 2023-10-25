@@ -5,7 +5,6 @@
 #include "Object.hpp"
 #include "DeathZone.hpp"
 #include "GameObject.hpp"
-#include "Bound.hpp"
 #include "Timeline.hpp"
 #include <vector>
 #include <iostream>
@@ -28,7 +27,7 @@ public:
     void updateDeltaTime();
     void createCharacter(int id);
     void deleteCharacter(int id);
-    void checkInputs(sf::RenderWindow *window); // check input for the specific Client runnning
+    bool checkInputs(sf::RenderWindow *window); // check input for the specific Client runnning
     void parsePos(std::string str);
     void setBounds();
     void updateView();
@@ -39,9 +38,9 @@ public:
     // Accessor method to get a specific game object by index
     // std::vector<Actor *> actorObjects;
     std::map<int, Actor*> actorMap;
+    // std::iterator<int, Actor*> it;
     std::vector<GameObject *> gameObjects;
     std::vector<DeathZone *> deathObjects;
-    std::vector<Bound *> bounds;
 
     sf::View *gameview;
     float viewLeft;

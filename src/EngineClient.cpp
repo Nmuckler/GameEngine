@@ -152,7 +152,8 @@ int main()
                 {
                     zmq::socket_t cancel(context, zmq::socket_type::req);
                     cancel.connect("tcp://localhost:8888"); // connect to server thread
-                    cancel.send(zmq::buffer("c" + std::to_string(clientID)), zmq::send_flags::none);
+                    cancel.send(zmq::buffer(std::to_string(clientID)), zmq::send_flags::none);
+                    std::cout << "Disconnecting to the server with ID: " << clientID << std::endl;
                     window.close();
                 }
             }
