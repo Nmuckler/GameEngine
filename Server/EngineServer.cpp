@@ -24,8 +24,6 @@
 #define sleep(n) Sleep(n)
 #endif
 
-int host;
-
 bool moveY = true;
 float valY = 0;
 
@@ -64,6 +62,8 @@ void hoverY(int min, int max, float speed)
 std::map<int, std::string> map; // map to keep track of clientID, input
 int numClients = 0;
 bool ready = false;
+int host = 1;
+std::vector<int> deltedClientId;
 
 class ThreadRunner
 {
@@ -111,12 +111,14 @@ public:
                     // put this new character in the array
                     std::cout << "Client: " << numClients << " has been created" << std::endl;
                 }
-                else if (strlen(input_cstr) == 2)
+                else if (strlen(input_cstr) == 1 || strlen(input_cstr) == 2)
                 {
-                    int id;
-                    sscanf(input_cstr, "%d", &id);
-                    map[id] = ""; // set the map info to an empty string
-                    std::cout << "Client: " << id << " has been deleted (not really)" << std::endl;
+                    int deleteId;
+                    sscanf(input_cstr, "%d", &deleteId);
+                    // std::cout << "Received delete message: " << input_cstr << "going to delete client" << deleteId << std::endl; // have server tell that client is here
+                    // std::cout << "map was prev: " << map[deleteId] << std::endl; // have server tell that client is here
+                    deltedClientId.push_back(deleteId);
+                    std::cout << "Client: " << deleteId << " has been deleted" << std::endl;
                 }
                 else // recieved client info PUBLISH INFOMARION
                 {
@@ -125,7 +127,7 @@ public:
                     sscanf(input_cstr, "%d", &id); // scan the first number which is the id
                     // std::cout << "Id is: " << id << std::endl;
                     map[id] = input; // set the data at that id
-                    if (id == 1)     // update the platform whenever the host pings the server; In this case the host is client 1
+                    if (id == host)  // update the platform whenever the host pings the server; In this case the host is client 1
                     {
                         hoverY(0, 300, .5); //
                     }
@@ -159,6 +161,12 @@ int main()
 
     while (true)
     {
+
+
+        for (int i = 0; i < deltedClientId.size(); i++)
+        {
+            map[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
+        }
 
         // publish all positions and velicites; will have clients render
         std::string allInfo = "";
