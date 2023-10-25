@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <ctime> 
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 

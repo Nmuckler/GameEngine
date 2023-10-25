@@ -2,21 +2,27 @@
 
 Object::Object(sf::Shape &shape, sf::Vector2f position, const std::string &texturePath) : shape(shape), texture(texture)
 {
-    if (texturePath == "")
-    {
-        this->shape.setFillColor(sf::Color::Red);
-    }
-    else if (colorMap.find(texturePath) != colorMap.end())
+    
+    if (colorMap.find(texturePath) != colorMap.end())
     {
         this->shape.setFillColor(colorMap.at(texturePath));
     }
-    else if (!texture.loadFromFile(texturePath))
+    else if (texturePath == "Random")
     {
-        this->shape.setFillColor(sf::Color::Magenta);
+        srand(static_cast<unsigned>(time(nullptr)));
+
+        int red = (rand() % 256);
+        int blue = (rand() % 256);
+        int green = (rand() % 256);
+        this->shape.setFillColor(sf::Color(red, green, blue));
+    }
+    else if (texture.loadFromFile(texturePath))
+    {
+        this->shape.setTexture(&texture);
     }
     else
     {
-        this->shape.setTexture(&texture);
+        this->shape.setFillColor(sf::Color::Magenta);
     }
     this->shape.setPosition(position);
     positionX = position.x;

@@ -38,7 +38,7 @@ public:
 
     // Accessor method to get a specific game object by index
     std::vector<Actor *> actorObjects;
-    // std::map<int, Actor*> actorMap;
+    std::map<int, Actor*> actorMap;
     std::vector<GameObject *> gameObjects;
     std::vector<DeathZone *> deathObjects;
     std::vector<Bound *> bounds;

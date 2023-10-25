@@ -45,7 +45,7 @@ void GameManager::initialize(sf::View *view)
     sf::RectangleShape *rightTangle = new sf::RectangleShape(sf::Vector2f(10.f, 1000.f));
 
     // create platforms
-    GameObject *floor = new GameObject(line, sf::Vector2f(0, 550), "Green");
+    GameObject *floor = new GameObject(line, sf::Vector2f(0, 550), "Random");
     GameObject *platform = new GameObject(movingLine, sf::Vector2f(600, 550), "Blue");
     GameObject *platform2 = new GameObject(movingLine2, sf::Vector2f(600, 200), "Magenta");
 
@@ -79,18 +79,20 @@ void GameManager::createCharacter(int id)
 {
     clientID = id;
 
-        printf("created a new character...\n");
-        try
-        {
-            sf::CircleShape *newActorCircle = new sf::CircleShape(35.f);
-            Actor *character = new Actor(newActorCircle, sf::Vector2f(100, 450), "hamster.png", actorObjects.size() + 1);
-            actorObjects.push_back(character);
-            numClients++;
-        }
-        catch (...)
-        {
-            std::cerr << "Character caught exception." << std::endl;
-        }
+    printf("created a new character...\n");
+    try
+    {
+        sf::CircleShape *newActorCircle = new sf::CircleShape(35.f);
+        Actor *character = new Actor(newActorCircle, sf::Vector2f(100, 450), "hamster.png", actorObjects.size() + 1);
+        actorObjects.push_back(character);
+        numClients++;
+        // actorMap[++numClients] = character;
+
+    }
+    catch (...)
+    {
+        std::cerr << "Character caught exception." << std::endl;
+    }
 }
 
 void GameManager::deleteCharacter(int id)
@@ -119,20 +121,6 @@ void GameManager::checkInputs(sf::RenderWindow *window)
         {
             grounded = false;
         }
-
-        // scrolling screen
-        // if (actorObjects[idx]->isTouching(bounds[0]->getShape()))
-        // {
-        //     view.move(-2.f, 0.f);
-        //     bounds[0]->getShape().setPosition(bounds[0]->getShape().getPosition().x - 2, 0);
-        //     bounds[1]->getShape().setPosition(bounds[1]->getShape().getPosition().x - 2, 0);
-        // }
-        // else if (actorObjects[idx]->isTouching(bounds[1]->getShape()))
-        // {
-        //     view.move(2.f, 0.f);
-        //     bounds[1]->getShape().setPosition(bounds[1]->getShape().getPosition().x + 2, 0);
-        //     bounds[0]->getShape().setPosition(bounds[0]->getShape().getPosition().x + 2, 0);
-        // }
 
         // check for death
         if (actorObjects[idx]->isTouching(deathObjects[0]->getShape()))
@@ -202,16 +190,6 @@ void GameManager::checkInputs(sf::RenderWindow *window)
                 actorObjects[idx]->jump();
             }
         }
-        // if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        // {
-        //     // Left key isd pressed: move our character to the left
-        //     gameview->move(0.5,0);
-        // }
-        // if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        // {
-        //     // Right key is pressed: move our character to the right
-        //     gameview->move(-0.5,0);
-        // }
     }
     else
     {
