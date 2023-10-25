@@ -79,14 +79,16 @@ void GameManager::createCharacter(int id)
 {
     clientID = id;
 
-    printf("created a new character...\n");
+    // printf("created a new character...\n");
     try
     {
         sf::CircleShape *newActorCircle = new sf::CircleShape(35.f);
-        Actor *character = new Actor(newActorCircle, sf::Vector2f(100, 450), "hamster.png", actorObjects.size() + 1);
-        actorObjects.push_back(character);
-        numClients++;
-        // actorMap[++numClients] = character;
+        Actor *character = new Actor(newActorCircle, sf::Vector2f(100, 450), "hamster.png", ++numClients);
+        // actorObjects.push_back(character);
+        // numClients++;
+        actorMap[numClients] = character;
+        std::cerr << "Created client:" << numClients << std::endl;
+
 
     }
     catch (...)
@@ -101,20 +103,17 @@ void GameManager::deleteCharacter(int id)
 
 void GameManager::checkInputs(sf::RenderWindow *window)
 {
-    int idx = clientID - 1;
-    // printf("The size of actor objects is: %ld\n", actorObjects.size());
-    // for (int i = 0; i < actorObjects.size(); i++)
-    // {
-    // printf("Checking inputs for actor %d", i);
+    int idx = clientID;
 
-    if (idx >= 0 && idx < actorObjects.size())
+
+    if (idx >= 0 && clientID <= actorMap.size())
     {
 
         // compute grounded
-        if (actorObjects[idx]->isTouching(gameObjects[0]->getShape()) || actorObjects[idx]->isTouching(gameObjects[1]->getShape()) || actorObjects[idx]->isTouching(gameObjects[2]->getShape()))
+        if (actorMap[idx]->isTouching(gameObjects[0]->getShape()) || actorMap[idx]->isTouching(gameObjects[1]->getShape()) || actorMap[idx]->isTouching(gameObjects[2]->getShape()))
         {
             // printf("Setting to true\n");
-            actorObjects[idx]->velocityY = 0;
+            actorMap[idx]->velocityY = 0;
             grounded = true;
         }
         else
@@ -123,9 +122,9 @@ void GameManager::checkInputs(sf::RenderWindow *window)
         }
 
         // check for death
-        if (actorObjects[idx]->isTouching(deathObjects[0]->getShape()))
+        if (actorMap[idx]->isTouching(deathObjects[0]->getShape()))
         {
-            actorObjects[idx]->respawn();
+            actorMap[idx]->respawn();
             setBounds();
         }
 
@@ -169,25 +168,25 @@ void GameManager::checkInputs(sf::RenderWindow *window)
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
         {
-            actorObjects[idx]->setSpawn(actorObjects[idx]->positionX, actorObjects[idx]->positionY);
+            actorMap[idx]->setSpawn(actorMap[idx]->positionX, actorMap[idx]->positionY);
         }
 
         // Controls
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
         {
             // Left key is pressed: move our character to the left
-            actorObjects[idx]->moveLeft(moveSpeed);
+            actorMap[idx]->moveLeft(moveSpeed);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
         {
             // Right key is pressed: move our character to the right
-            actorObjects[idx]->moveRight(moveSpeed);
+            actorMap[idx]->moveRight(moveSpeed);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
         {
             if (grounded)
             {
-                actorObjects[idx]->jump();
+                actorMap[idx]->jump();
             }
         }
     }
@@ -233,11 +232,11 @@ void GameManager::parsePos(std::string str)
             {
                 if (id != clientID)
                 {
-                    while (id > actorObjects.size())
+                    while (id > actorMap.size())
                     {
                         createCharacter(clientID);
                     }
-                    actorObjects[id - 1]->getShape().setPosition(xpos, ypos);
+                    actorMap[id]->getShape().setPosition(xpos, ypos);
                 }
             }
         }
@@ -246,9 +245,9 @@ void GameManager::parsePos(std::string str)
 
 std::string GameManager::toString(int id)
 {
-    int idx = id - 1;
+    int idx = id;
     std::string stream = "";
-    stream += std::to_string(actorObjects[idx]->getId()) + "," + std::to_string(actorObjects[idx]->positionX) + "," + std::to_string(actorObjects[idx]->positionY) + "|";
+    stream += std::to_string(actorMap[idx]->getId()) + "," + std::to_string(actorMap[idx]->positionX) + "," + std::to_string(actorMap[idx]->positionY) + "|";
 
     return stream;
 }
@@ -257,7 +256,7 @@ std::string GameManager::allToString()
 {
     std::string stream = ""; // Initialize the stream
 
-    for (int i = 1; i <= actorObjects.size(); i++)
+    for (int i = 1; i <= actorMap.size(); i++)
     {
         stream += toString(i);
     }
@@ -266,10 +265,10 @@ std::string GameManager::allToString()
 }
 void GameManager::setBounds()
 {
-    if (actorObjects.size() > 0)
+    if (actorMap.size() > 0)
     {
-        int xPos = actorObjects[clientID - 1]->positionX;
-        int yPos = actorObjects[clientID - 1]->positionY;
+        int xPos = actorMap[clientID]->positionX;
+        int yPos = actorMap[clientID]->positionY;
 
         viewLeft = xPos - 100;
         viewRight = xPos + 100;
@@ -285,8 +284,8 @@ void GameManager::updateView()
     double time = sentTime / 10;
     if (time < 100 && time >= 0)
     {
-        float xPos = actorObjects[clientID - 1]->positionX;
-        float xVel = time * actorObjects[clientID - 1]->velocityX;
+        float xPos = actorMap[clientID]->positionX;
+        float xVel = time * actorMap[clientID]->velocityX;
 
         if (xPos <= viewLeft && xVel < 0)
         {
@@ -312,7 +311,7 @@ void GameManager::render(sf::RenderWindow &window)
 
     if (!timeline.isPaused())
     {
-        actorObjects[clientID - 1]->update(sentTime, grounded);
+        actorMap[clientID]->update(sentTime, grounded);
 
         // if (clientID == 1) //other clients get platform info from another client
         // {
@@ -323,9 +322,9 @@ void GameManager::render(sf::RenderWindow &window)
         // }
     }
     // Draw the character
-    for (int i = 0; i < actorObjects.size(); i++)
+    for (int i = 1; i <= actorMap.size(); i++)
     {
-        actorObjects[i]->draw(window, hitboxActive);
+        actorMap[i]->draw(window, hitboxActive);
     }
     for (int i = 0; i < gameObjects.size(); i++)
     {
