@@ -8,6 +8,7 @@
 #include <sstream>
 #include <map>
 #include <ctime> 
+#include <random>
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 

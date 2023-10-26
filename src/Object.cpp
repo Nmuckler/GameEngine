@@ -2,7 +2,10 @@
 
 Object::Object(sf::Shape &shape, sf::Vector2f position, const std::string &texturePath) : shape(shape), texture(texture)
 {
-    
+
+    static std::default_random_engine randomEngine(std::random_device{}());
+    static std::uniform_int_distribution<int> colorDistribution(0, 255);
+
     if (colorMap.find(texturePath) != colorMap.end())
     {
         this->shape.setFillColor(colorMap.at(texturePath));
@@ -11,9 +14,9 @@ Object::Object(sf::Shape &shape, sf::Vector2f position, const std::string &textu
     {
         srand(static_cast<unsigned>(time(nullptr)));
 
-        int red = (rand() % 256);
-        int blue = (rand() % 256);
-        int green = (rand() % 256);
+        int red = colorDistribution(randomEngine);
+        int blue = colorDistribution(randomEngine);
+        int green = colorDistribution(randomEngine);
         this->shape.setFillColor(sf::Color(red, green, blue));
     }
     else if (texture.loadFromFile(texturePath))

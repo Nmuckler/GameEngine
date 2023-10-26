@@ -7,7 +7,7 @@
 #include "../src/Actor.hpp"
 #include "../src/Object.hpp"
 #include "../src/GameObject.hpp"
-#include "../src/Timeline.hpp"
+#include "Timeline.hpp"
 #include "../src/GameManager.hpp"
 #include <zmq.hpp>
 #include <map>
@@ -26,6 +26,8 @@
 
 bool moveY = true;
 float valY = 0;
+Timeline timeline = Timeline();
+
 
 void hoverY(int min, int max, float speed)
 {
@@ -59,7 +61,7 @@ void hoverY(int min, int max, float speed)
     }
 }
 
-std::map<int, std::string> map; // map to keep track of clientID, input
+std::map<int, std::string> infoMap; // map to keep track of clientID, input
 int numClients = 0;
 bool ready = false;
 int host = 1;
@@ -103,7 +105,7 @@ public:
                     socket.send(zmq::buffer(sendID), zmq::send_flags::none); // send ID to client
                     std::cout << "Received New Client" << std::endl;         // have server tell that client is here
 
-                    map[numClients + 1] = "";
+                    infoMap[numClients + 1] = "";
 
                     // // TEMP
                     numClients++;
@@ -126,7 +128,7 @@ public:
                     // char input;
                     sscanf(input_cstr, "%d", &id); // scan the first number which is the id
                     // std::cout << "Id is: " << id << std::endl;
-                    map[id] = input; // set the data at that id
+                    infoMap[id] = input; // set the data at that id
                     if (id == host)  // update the platform whenever the host pings the server; In this case the host is client 1
                     {
                         hoverY(0, 300, .5); //
@@ -165,9 +167,9 @@ int main()
 
         for (int i = 0; i < deltedClientId.size(); i++)
         {
-            map[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
+            infoMap[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
             if(deltedClientId[i] == host){
-                for (auto it = map.begin(); it != map.end(); ++it){
+                for (auto it = infoMap.begin(); it != infoMap.end(); ++it){
                     if(it->second.substr(0, 7)  != "deleted"){
                         host = it->first;
                         break;
@@ -181,9 +183,9 @@ int main()
         std::string allInfo = "";
         for (int i = 1; i <= numClients; i++)
         {
-            if (map[i] != "")
+            if (infoMap[i] != "")
             {
-                allInfo += map[i];
+                allInfo += infoMap[i];
             }
         }
 

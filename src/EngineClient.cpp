@@ -5,6 +5,7 @@
 #include "GameManager.hpp"
 #include <zmq.hpp>
 #include <map>
+#include <csignal>
 #include <string>
 #include <iostream>
 #include <thread>
@@ -17,7 +18,7 @@
 
 #define sleep(n) Sleep(n)
 #endif
-std::map<int, char> map;
+int clientID;
 
 class ThreadRunner
 {
@@ -88,8 +89,25 @@ void run_wrapper(ThreadRunner *fe)
     fe->run();
 }
 
+void signalHandler(int signal)
+{
+
+    std::cerr << "Signal " << signal << " received. Performing cleanup or handling as needed." << std::endl;
+    zmq::context_t context(1);
+    zmq::socket_t cancel(context, zmq::socket_type::req);
+    cancel.connect("tcp://localhost:8888"); // connect to server thread
+    cancel.send(zmq::buffer(std::to_string(clientID)), zmq::send_flags::none);
+    std::cout << "Disconnecting to the server with ID: " << clientID << std::endl;
+    exit(signal);
+}
+
 int main()
 {
+    signal(SIGINT, signalHandler);   // Handle Ctrl+C
+    signal(SIGTERM, signalHandler);  // Handle termination request
+    signal(SIGSEGV, signalHandler);  // Handle segmentation fault
+    signal(SIGFPE, signalHandler);   // Handle floating-point exception
+
     std::mutex m;
     sf::RenderWindow window(sf::VideoMode(800, 600), "Client Window");
     window.setFramerateLimit(60);
@@ -111,9 +129,9 @@ int main()
     std::string sendID = "-1";                               // Request a new client ID
     socket.send(zmq::buffer(sendID), zmq::send_flags::none); // send that to server
 
-    zmq::message_t reply;                                              // get reply from server
-    socket.recv(reply, zmq::recv_flags::none);                         // receive
-    int clientID = std::atoi(static_cast<const char *>(reply.data())); // process as an int
+    zmq::message_t reply;                                          // get reply from server
+    socket.recv(reply, zmq::recv_flags::none);                     // receive
+    clientID = std::atoi(static_cast<const char *>(reply.data())); // process as an int
     socket.close();
 
     // NEED TO CREATE CHARACTERS IF ID > 1

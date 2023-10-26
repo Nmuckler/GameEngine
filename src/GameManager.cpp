@@ -28,7 +28,6 @@ GameManager *GameManager::getInstance()
     return singleton;
 }
 
-
 /**
  * This creates an instantiates the enviroment
  */
@@ -36,20 +35,18 @@ void GameManager::initialize(sf::View *view)
 {
     gameview = view;
 
-
     sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(2500.f, 300.f));
 
-
-
     createPlatform(500, 2000, 0, 550, "Random");
-    createPlatform(250, 30, 600, 550, "Blue");
-    createPlatform(250, 30, 600, 200, "Magenta");
+    createPlatform(250, 30, 600, 550, "Random");
+    createPlatform(250, 30, 600, 200, "Random");
+    createPlatform(250, 30, 0, 200, "Random");
+    createPlatform(500, 2000, -800, 550, "Random");
+
 
     DeathZone *deathzone1 = new DeathZone(deathtangle, sf::Vector2f(-1000, 675), "Transparent");
 
-
     deathObjects.push_back(deathzone1);
-
 }
 
 void GameManager::updateDeltaTime()
@@ -109,17 +106,20 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
     if (idx >= 0 && clientID <= actorMap.size())
     {
 
-        // compute grounded
-        if (actorMap[idx]->isTouching(gameObjects[0]->getShape()) || actorMap[idx]->isTouching(gameObjects[1]->getShape()) || actorMap[idx]->isTouching(gameObjects[2]->getShape()))
+        bool checkGround = false;
+        for (int i = 0; i < gameObjects.size(); i++)
         {
-            // printf("Setting to true\n");
-            actorMap[idx]->velocityY = 0;
-            grounded = true;
+            if (actorMap[idx]->isTouching(gameObjects[i]->getShape()))
+            {
+                actorMap[idx]->velocityY = 0;
+                grounded = true;
+                checkGround = true;
+            }
         }
-        else
-        {
+        if(!checkGround){
             grounded = false;
         }
+
 
         // check for death
         if (actorMap[idx]->isTouching(deathObjects[0]->getShape()))
