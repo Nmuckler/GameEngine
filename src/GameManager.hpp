@@ -25,6 +25,7 @@ public:
     static GameManager *getInstance();
     void initialize(sf::View *gameview);
     void updateDeltaTime();
+    void createPlatform(float xsize, float ysize, float xPos, float yPos, const std::string &texturePath);
     void createCharacter(int id);
     void deleteCharacter(int id);
     bool checkInputs(sf::RenderWindow *window); // check input for the specific Client runnning

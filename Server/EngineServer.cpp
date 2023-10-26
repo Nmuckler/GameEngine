@@ -166,6 +166,15 @@ int main()
         for (int i = 0; i < deltedClientId.size(); i++)
         {
             map[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
+            if(deltedClientId[i] == host){
+                for (auto it = map.begin(); it != map.end(); ++it){
+                    if(it->second.substr(0, 7)  != "deleted"){
+                        host = it->first;
+                        break;
+                    }
+                }
+
+            }
         }
 
         // publish all positions and velicites; will have clients render

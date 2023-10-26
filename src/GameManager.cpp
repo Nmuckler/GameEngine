@@ -28,6 +28,7 @@ GameManager *GameManager::getInstance()
     return singleton;
 }
 
+
 /**
  * This creates an instantiates the enviroment
  */
@@ -35,32 +36,20 @@ void GameManager::initialize(sf::View *view)
 {
     gameview = view;
 
-    sf::RectangleShape *line = new sf::RectangleShape(sf::Vector2f(500.f, 2000.f));
-    sf::RectangleShape *movingLine = new sf::RectangleShape(sf::Vector2f(250.f, 30.f));
-    sf::RectangleShape *movingLine2 = new sf::RectangleShape(sf::Vector2f(250.f, 30.f));
 
     sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(2500.f, 300.f));
 
-    sf::RectangleShape *leftTangle = new sf::RectangleShape(sf::Vector2f(10.f, 1000.f));
-    sf::RectangleShape *rightTangle = new sf::RectangleShape(sf::Vector2f(10.f, 1000.f));
 
-    // create platforms
-    GameObject *floor = new GameObject(line, sf::Vector2f(0, 550), "Random");
-    GameObject *platform = new GameObject(movingLine, sf::Vector2f(600, 550), "Blue");
-    GameObject *platform2 = new GameObject(movingLine2, sf::Vector2f(600, 200), "Magenta");
 
-    DeathZone *deathzone1 = new DeathZone(deathtangle, sf::Vector2f(-1000, 625), "Transparent");
+    createPlatform(500, 2000, 0, 550, "Random");
+    createPlatform(250, 30, 600, 550, "Blue");
+    createPlatform(250, 30, 600, 200, "Magenta");
 
-    // Bound *leftBound = new Bound(leftTangle, sf::Vector2f(-100, 0), "Red");
-    // Bound *rightBound = new Bound(rightTangle, sf::Vector2f(300, 0), "Red");
+    DeathZone *deathzone1 = new DeathZone(deathtangle, sf::Vector2f(-1000, 675), "Transparent");
 
-    gameObjects.push_back(floor);
-    gameObjects.push_back(platform);
-    gameObjects.push_back(platform2);
+
     deathObjects.push_back(deathzone1);
 
-    // bounds.push_back(leftBound);
-    // bounds.push_back(rightBound);
 }
 
 void GameManager::updateDeltaTime()
@@ -73,6 +62,20 @@ void GameManager::updateDeltaTime()
 
     lastTime = currTime;
     sentTime = deltaTime;
+}
+
+void GameManager::createPlatform(float xsize, float ysize, float xPos, float yPos, const std::string &texturePath)
+{
+    try
+    {
+        sf::RectangleShape *line = new sf::RectangleShape(sf::Vector2f(xsize, ysize));
+        GameObject *platform = new GameObject(line, sf::Vector2f(xPos, yPos), texturePath);
+        gameObjects.push_back(platform);
+    }
+    catch (...)
+    {
+        std::cerr << "Platform caught exception." << std::endl;
+    }
 }
 
 void GameManager::createCharacter(int id)
@@ -217,7 +220,8 @@ void GameManager::parsePos(std::string str)
             float platformX, platformY;
             if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
             {
-                gameObjects[1]->getShape().setPosition(platformX, platformY);
+                if (gameObjects.size() >= 2)
+                    gameObjects[1]->getShape().setPosition(platformX, platformY);
                 // std::cout << "Set position to: " << platformY << std::endl;
             }
         }
@@ -226,7 +230,8 @@ void GameManager::parsePos(std::string str)
             float platformX, platformY;
             if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
             {
-                gameObjects[2]->getShape().setPosition(platformX, platformY);
+                if (gameObjects.size() >= 3)
+                    gameObjects[2]->getShape().setPosition(platformX, platformY);
                 // std::cout << "Set position to: " << platformY << std::endl;
             }
         }
