@@ -43,7 +43,7 @@ endif
 
 .PHONY: clean
 clean:
-	rm -f $(obj) main
+	rm -f $(filter-out %.cpp, $(obj)) main
 
 .PHONY: init
 init:

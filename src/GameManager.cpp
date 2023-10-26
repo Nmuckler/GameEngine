@@ -37,10 +37,13 @@ void GameManager::initialize(sf::View *view)
     sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(2500.f, 300.f));
 
     createPlatform(500, 2000, 0, 550, "Random");
-    createPlatform(250, 30, 600, 550, "Random");
-    createPlatform(250, 30, 600, 200, "Random");
+    createPlatform(250, 30, 600, 550, "Random"); //moving platform 1 index line 226
+    createPlatform(250, 30, 600, 200, "Random"); //moving platform 2 line 236
     createPlatform(250, 30, 0, 200, "Random");
     createPlatform(500, 2000, -800, 550, "Random");
+    createPlatform(500, 2000, 1200, 550, "Random");
+
+
 
 
     DeathZone *deathzone1 = new DeathZone(deathtangle, sf::Vector2f(-1000, 675), "Transparent");
@@ -347,8 +350,6 @@ void GameManager::render(sf::RenderWindow &window)
         deathObjects[i]->draw(window, hitboxActive);
     }
 
-    // bounds[0]->draw(window, hitboxActive);
-    // bounds[1]->draw(window, hitboxActive);
 
     // deathObjects[1]->draw(window, hitboxActive);
     // printf("leftBound: %f\n", viewLeft);
