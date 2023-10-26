@@ -7,7 +7,7 @@
 #include "../src/Actor.hpp"
 #include "../src/Object.hpp"
 #include "../src/GameObject.hpp"
-#include "Timeline.hpp"
+#include "../src/Timeline.hpp"
 #include "../src/GameManager.hpp"
 #include <zmq.hpp>
 #include <map>
@@ -26,8 +26,9 @@
 
 bool moveY = true;
 float valY = 0;
-Timeline timeline = Timeline();
-
+Timeline timeLine = Timeline();
+int64_t currentTime = 0;
+int64_t deltatime = 0;
 
 void hoverY(int min, int max, float speed)
 {
@@ -62,6 +63,7 @@ void hoverY(int min, int max, float speed)
 }
 
 std::map<int, std::string> infoMap; // map to keep track of clientID, input
+std::map<int, int64_t> timeMap;
 int numClients = 0;
 bool ready = false;
 int host = 1;
@@ -128,10 +130,40 @@ public:
                     // char input;
                     sscanf(input_cstr, "%d", &id); // scan the first number which is the id
                     // std::cout << "Id is: " << id << std::endl;
-                    infoMap[id] = input; // set the data at that id
-                    if (id == host)  // update the platform whenever the host pings the server; In this case the host is client 1
+                    infoMap[id] = input;              // set the data at that id
+                    timeMap[id] = timeLine.getTime(); // set last client report to the current time
+                    if (id == host)                   // update the platform whenever the host pings the server; In this case the host is client 1
                     {
                         hoverY(0, 300, .5); //
+                    }
+                }
+            }
+        }
+        else if (i == 2)
+        {
+            while (true)
+            {
+                currentTime = timeLine.getTime();
+                for (auto it = timeMap.begin(); it != timeMap.end(); ++it)
+                {
+                    bool isDeleted = false;
+                    for (int i = 0; i < (int) deltedClientId.size(); i++)
+                    {
+                        if (deltedClientId[i] == it->first)
+                            isDeleted = true;
+                    }
+                    if (!isDeleted)
+                    {
+                        deltatime = currentTime - it->second;
+                        if (deltatime >= 50 && deltatime <= 300)
+                        {
+                            std::cout << "Putting a timeout for: " << it->first << std::endl;
+                            deltedClientId.push_back(it->first);
+                        }
+                        // else
+                        // {
+                        //     std::cout << "Not deleting : " << it->first << " since delta time was " << deltaTime << std::endl;
+                        // }
                     }
                 }
             }
@@ -161,21 +193,25 @@ int main()
     ThreadRunner t1(1, NULL, &m);
     std::thread first(run_wrapper, &t1);
 
+    ThreadRunner t2(2, NULL, &m); // check timeouts
+    std::thread second(run_wrapper, &t2);
+
     while (true)
     {
 
-
-        for (int i = 0; i < deltedClientId.size(); i++)
+        for (int i = 0; i < (int) deltedClientId.size(); i++)
         {
             infoMap[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
-            if(deltedClientId[i] == host){
-                for (auto it = infoMap.begin(); it != infoMap.end(); ++it){
-                    if(it->second.substr(0, 7)  != "deleted"){
+            if (deltedClientId[i] == host)
+            {
+                for (auto it = infoMap.begin(); it != infoMap.end(); ++it)
+                {
+                    if (it->second.substr(0, 7) != "deleted")
+                    {
                         host = it->first;
                         break;
                     }
                 }
-
             }
         }
 

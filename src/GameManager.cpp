@@ -3,7 +3,6 @@
 float moveSpeed = 2;
 bool hitboxActive = false;
 Timeline timeline = Timeline();
-// Timeline characterTimeline = Timeline(&timeline, 1); //WILL NEED TO CREATE ARRAY OF TIMELINES
 int64_t currTime = 0;
 int64_t lastTime = 0;
 int64_t deltaTime = 0;
@@ -241,6 +240,8 @@ void GameManager::parsePos(std::string str)
             if (sscanf(clientData.c_str() + 7, "%d", &deletedId) == 1)
             {
                 // std::cout << "Deleting client: " << deletedId << std::endl;
+                if(deletedId == clientID)
+                    abort();
                 deleteCharacter(deletedId);
             }
         }

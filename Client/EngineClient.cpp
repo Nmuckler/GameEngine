@@ -1,8 +1,8 @@
-#include "Actor.hpp"
-#include "Object.hpp"
-#include "GameObject.hpp"
-#include "Timeline.hpp"
-#include "GameManager.hpp"
+#include "../src/Actor.hpp"
+#include "../src/Object.hpp"
+#include "../src/GameObject.hpp"
+#include "../src/Timeline.hpp"
+#include "../src/GameManager.hpp"
 #include <zmq.hpp>
 #include <map>
 #include <csignal>
