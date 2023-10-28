@@ -155,9 +155,9 @@ public:
                     if (!isDeleted)
                     {
                         deltatime = currentTime - it->second;
-                        if (deltatime >= 50 && deltatime <= 300)
+                        if (deltatime >= 1000 && deltatime <= 3000)
                         {
-                            std::cout << "Putting a timeout for: " << it->first << std::endl;
+                            std::cout << "Putting a timeout for: " << it->first << " since the time was: " << deltatime <<std::endl;
                             deltedClientId.push_back(it->first);
                         }
                         // else
