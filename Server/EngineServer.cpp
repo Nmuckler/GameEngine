@@ -147,7 +147,7 @@ public:
                 for (auto it = timeMap.begin(); it != timeMap.end(); ++it)
                 {
                     bool isDeleted = false;
-                    for (int i = 0; i < (int) deltedClientId.size(); i++)
+                    for (int i = 0; i < (int)deltedClientId.size(); i++)
                     {
                         if (deltedClientId[i] == it->first)
                             isDeleted = true;
@@ -157,13 +157,35 @@ public:
                         deltatime = currentTime - it->second;
                         if (deltatime >= 1000 && deltatime <= 3000)
                         {
-                            std::cout << "Putting a timeout for: " << it->first << " since the time was: " << deltatime <<std::endl;
+                            std::cout << "Putting a timeout for: " << it->first << " since the time was: " << deltatime << std::endl;
                             deltedClientId.push_back(it->first);
                         }
                         // else
                         // {
                         //     std::cout << "Not deleting : " << it->first << " since delta time was " << deltaTime << std::endl;
                         // }
+                    }
+                }
+            }
+        }
+        else if (i == 3)
+        {
+            while (true)
+            {
+                for (int i = 0; i < (int)deltedClientId.size(); i++)
+                {
+                    infoMap[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
+                    if (deltedClientId[i] == host)
+                    {
+                        for (auto it = infoMap.begin(); it != infoMap.end(); ++it)
+                        {
+                            if (it->second.substr(0, 7) != "deleted")
+                            {
+                                host = it->first;
+                                std::cout << "Setting new host to : " << it->first << std::endl;
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -196,24 +218,27 @@ int main()
     ThreadRunner t2(2, NULL, &m); // check timeouts
     std::thread second(run_wrapper, &t2);
 
+    ThreadRunner t3(3, NULL, &m);
+    std::thread third(run_wrapper, &t3);
+
     while (true)
     {
 
-        for (int i = 0; i < (int) deltedClientId.size(); i++)
-        {
-            infoMap[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
-            if (deltedClientId[i] == host)
-            {
-                for (auto it = infoMap.begin(); it != infoMap.end(); ++it)
-                {
-                    if (it->second.substr(0, 7) != "deleted")
-                    {
-                        host = it->first;
-                        break;
-                    }
-                }
-            }
-        }
+        // for (int i = 0; i < (int)deltedClientId.size(); i++)
+        // {
+        //     infoMap[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
+        //     if (deltedClientId[i] == host)
+        //     {
+        //         for (auto it = infoMap.begin(); it != infoMap.end(); ++it)
+        //         {
+        //             if (it->second.substr(0, 7) != "deleted")
+        //             {
+        //                 host = it->first;
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
 
         // publish all positions and velicites; will have clients render
         std::string allInfo = "";
