@@ -31,6 +31,8 @@ public:
     void deleteCharacter(int id);
     bool checkInputs(sf::RenderWindow *window); // check input for the specific Client runnning
     void parsePos(std::string str);
+    void parseEnv(std::string str);
+
     void setBounds();
     void updateView();
     void render(sf::RenderWindow &window);

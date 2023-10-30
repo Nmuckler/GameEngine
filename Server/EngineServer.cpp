@@ -65,9 +65,11 @@ void hoverY(int min, int max, float speed)
 std::map<int, std::string> infoMap; // map to keep track of clientID, input
 std::map<int, int64_t> timeMap;
 int numClients = 0;
-bool ready = false;
 int host = 1;
 std::vector<int> deltedClientId;
+std::string allInfo;
+std::string platInfo;
+
 
 class ThreadRunner
 {
@@ -190,6 +192,27 @@ public:
                 }
             }
         }
+        else if (i == 4)
+        {
+            allInfo = "";
+            for (int i = 1; i <= numClients; i++)
+            {
+                if (infoMap[i] != "")
+                {
+                    allInfo += infoMap[i];
+                }
+            }
+
+            
+        }
+        else if (i == 5)
+        {
+            platInfo = "";
+            float newY = 550 - valY;
+            float newX = 600 - valY;
+            platInfo += "platform1" + std::to_string(600) + "," + std::to_string(newY) + "|";
+            platInfo += "platform2" + std::to_string(newX) + "," + std::to_string(200) + "|";
+        }
     }
 };
 
@@ -207,8 +230,11 @@ int main()
 
     zmq::context_t context(2);
     zmq::socket_t publisher(context, zmq::socket_type::pub);
+    zmq::socket_t publisher2(context, zmq::socket_type::pub);
 
     publisher.bind("tcp://*:6666");
+    publisher2.bind("tcp://*:7667");
+
 
     std::cout << "Creating the server..." << std::endl;
 
@@ -221,42 +247,24 @@ int main()
     ThreadRunner t3(3, NULL, &m);
     std::thread third(run_wrapper, &t3);
 
+    ThreadRunner t4(4, NULL, &m);
+
+    ThreadRunner t5(5, NULL, &m);
+
     while (true)
     {
+        std::thread fourth(run_wrapper, &t4);
+        std::thread fifth(run_wrapper, &t5);
 
-        // for (int i = 0; i < (int)deltedClientId.size(); i++)
-        // {
-        //     infoMap[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
-        //     if (deltedClientId[i] == host)
-        //     {
-        //         for (auto it = infoMap.begin(); it != infoMap.end(); ++it)
-        //         {
-        //             if (it->second.substr(0, 7) != "deleted")
-        //             {
-        //                 host = it->first;
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
-
+        fourth.join();
+        fifth.join();
         // publish all positions and velicites; will have clients render
-        std::string allInfo = "";
-        for (int i = 1; i <= numClients; i++)
-        {
-            if (infoMap[i] != "")
-            {
-                allInfo += infoMap[i];
-            }
-        }
-
-        float newY = 550 - valY;
-        float newX = 600 - valY;
-        allInfo += "platform1" + std::to_string(600) + "," + std::to_string(newY) + "|";
-        allInfo += "platform2" + std::to_string(newX) + "," + std::to_string(200) + "|";
 
         // std::cout << "Published: \n" << allInfo << std::endl;
         publisher.send(zmq::buffer(allInfo), zmq::send_flags::none);
+
+        publisher2.send(zmq::buffer(platInfo), zmq::send_flags::none);
+
 
         // tell the clients the positions and velocities
         // maybe have a wait or confirms from all the clients before continuing

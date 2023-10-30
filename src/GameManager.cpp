@@ -45,7 +45,7 @@ void GameManager::initialize(sf::View *view)
     // bounds.push_back(rightB);
 
     createPlatform(500, 2000, 0, 550, "Red");
-    createPlatform(250, 30, 600, 550, "Blue"); // moving platform 1 index line 226
+    createPlatform(250, 30, 600, 550, "Blue");   // moving platform 1 index line 226
     createPlatform(250, 30, 600, 200, "Yellow"); // moving platform 2 line 236
     createPlatform(250, 30, 0, 200, "Green");
     createPlatform(500, 2000, -800, 550, "Cyan");
@@ -222,27 +222,8 @@ void GameManager::parsePos(std::string str)
     while (std::getline(iss, clientData, '|'))
     {
         // Check if this is client data or platform data
-        if (clientData.substr(0, 9) == "platform1")
-        {
-            float platformX, platformY;
-            if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
-            {
-                if (gameObjects.size() >= 2)
-                    gameObjects[1]->getShape().setPosition(platformX, platformY);
-                // std::cout << "Set position to: " << platformY << std::endl;
-            }
-        }
-        else if (clientData.substr(0, 9) == "platform2")
-        {
-            float platformX, platformY;
-            if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
-            {
-                if (gameObjects.size() >= 3)
-                    gameObjects[2]->getShape().setPosition(platformX, platformY);
-                // std::cout << "Set position to: " << platformY << std::endl;
-            }
-        }
-        else if (clientData.substr(0, 7) == "deleted")
+
+        if (clientData.substr(0, 7) == "deleted")
         {
             int deletedId;
             if (sscanf(clientData.c_str() + 7, "%d", &deletedId) == 1)
@@ -268,6 +249,37 @@ void GameManager::parsePos(std::string str)
                     }
                     actorMap[id]->getShape().setPosition(xpos, ypos);
                 }
+            }
+        }
+    }
+}
+
+void GameManager::parseEnv(std::string str)
+{
+    std::istringstream iss(str);
+    std::string clientData;
+
+    while (std::getline(iss, clientData, '|'))
+    {
+        // Check if this is client data or platform data
+        if (clientData.substr(0, 9) == "platform1")
+        {
+            float platformX, platformY;
+            if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
+            {
+                if (gameObjects.size() >= 2)
+                    gameObjects[1]->getShape().setPosition(platformX, platformY);
+                // std::cout << "Set position to: " << platformY << std::endl;
+            }
+        }
+        else if (clientData.substr(0, 9) == "platform2")
+        {
+            float platformX, platformY;
+            if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
+            {
+                if (gameObjects.size() >= 3)
+                    gameObjects[2]->getShape().setPosition(platformX, platformY);
+                // std::cout << "Set position to: " << platformY << std::endl;
             }
         }
     }

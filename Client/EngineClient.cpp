@@ -60,6 +60,8 @@ public:
                 subscriber.connect("tcp://localhost:6666");
 
                 zmq::message_t update; // get the update
+                // std::cout << "waiting to receive..."
+                //           << std::endl;
                 subscriber.recv(update, zmq::recv_flags::none);
                 std::string updateMessage(static_cast<const char *>(update.data()), update.size());
                 // std::cout << "received: \n"
@@ -77,6 +79,36 @@ public:
         {
             std::unique_lock<std::mutex> cv_lock(*this->_mutex);
             manager->updateDeltaTime();
+        }
+        else if (i == 2) // send this clients info to server and wait for publish
+        {
+            try
+            {
+                std::unique_lock<std::mutex> cv_lock(*this->_mutex);
+                //...
+
+                // compute deltatime from game manager
+                // manager->updateDeltaTime();
+
+                zmq::context_t context(1);
+                zmq::socket_t subscriber(context, zmq::socket_type::sub);
+                subscriber.setsockopt(ZMQ_CONFLATE, 1);
+                // subscriber.set(zmq::sockopt::subscribe, "", 0);
+                subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+                subscriber.connect("tcp://localhost:7667");
+                zmq::message_t update; // get the update
+                subscriber.recv(update, zmq::recv_flags::none);
+                std::string updateMessage(static_cast<const char *>(update.data()), update.size());
+                // std::cout << "received: \n"
+                //           << updateMessage << std::endl;
+                manager->parseEnv(updateMessage);
+
+                // process inputs from game manager
+            }
+            catch (...)
+            {
+                std::cerr << "Thread " << i << " caught exception." << std::endl;
+            }
         }
     }
 };
@@ -148,6 +180,8 @@ int main()
 
     ThreadRunner t1(0, NULL, &m, manager, clientID); // dtime stuff
     ThreadRunner t2(1, NULL, &m, manager, clientID); // input stuff
+    ThreadRunner t3(2, NULL, &m, manager, clientID); // input stuff
+
     try
     {
         while (window.isOpen())
@@ -179,6 +213,7 @@ int main()
             // wait for threads to finish
             std::thread first(run_wrapper, &t1);
             std::thread second(run_wrapper, &t2);
+            std::thread third(run_wrapper, &t3);
 
             if (clientID > 0)
                 manager->checkInputs(&window);
@@ -187,8 +222,10 @@ int main()
 
             socket.send(zmq::buffer(newPos), zmq::send_flags::none); // send client info to server
 
-            first.join();  // receive data
+            first.join(); // receive data
+            third.join();
             second.join(); // update delatime
+
             // manager->updateView();
             manager->render(window);
         }
