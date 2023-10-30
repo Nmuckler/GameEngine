@@ -17,7 +17,7 @@ Press H button to see hit boxes // this is here for fun
 Press 1 for slow speed
 Press 2 for medium speed
 Press 3 for fast speed
-Press 8 to set your spawn
+Press 8 to set your spawn (fall into the void and test it out!)
 
 
 

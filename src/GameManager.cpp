@@ -35,26 +35,21 @@ void GameManager::initialize(sf::View *view)
     gameview = view;
 
     sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(25000.f, 300.f));
-    sf::RectangleShape *left = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
-    sf::RectangleShape *right = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
+    // sf::RectangleShape *left = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
+    // sf::RectangleShape *right = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
 
-    Bound *leftB = new Bound(left, sf::Vector2f(0, -200), "Transparent");
-    Bound *rightB = new Bound(right, sf::Vector2f(0, -200), "Transparent");
+    // Bound *leftB = new Bound(left, sf::Vector2f(0, -200), "Red");
+    // Bound *rightB = new Bound(right, sf::Vector2f(0, -200), "Red");
 
-    bounds.push_back(leftB);
-    bounds.push_back(rightB);
+    // bounds.push_back(leftB);
+    // bounds.push_back(rightB);
 
-
-
-    createPlatform(500, 2000, 0, 550, "Random");
-    createPlatform(250, 30, 600, 550, "Random"); //moving platform 1 index line 226
-    createPlatform(250, 30, 600, 200, "Random"); //moving platform 2 line 236
-    createPlatform(250, 30, 0, 200, "Random");
-    createPlatform(500, 2000, -800, 550, "Random");
-    createPlatform(500, 2000, 1000, 550, "Random");
-
-
-
+    createPlatform(500, 2000, 0, 550, "Red");
+    createPlatform(250, 30, 600, 550, "Blue"); // moving platform 1 index line 226
+    createPlatform(250, 30, 600, 200, "Yellow"); // moving platform 2 line 236
+    createPlatform(250, 30, 0, 200, "Green");
+    createPlatform(500, 2000, -800, 550, "Cyan");
+    createPlatform(500, 2000, 1000, 550, "Magenta");
 
     DeathZone *deathzone1 = new DeathZone(deathtangle, sf::Vector2f(-10000, 675), "Transparent");
 
@@ -128,10 +123,10 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
                 checkGround = true;
             }
         }
-        if(!checkGround){
+        if (!checkGround)
+        {
             grounded = false;
         }
-
 
         // check for death
         if (actorMap[idx]->isTouching(deathObjects[0]->getShape()))
@@ -253,7 +248,7 @@ void GameManager::parsePos(std::string str)
             if (sscanf(clientData.c_str() + 7, "%d", &deletedId) == 1)
             {
                 // std::cout << "Deleting client: " << deletedId << std::endl;
-                if(deletedId == clientID)
+                if (deletedId == clientID)
                     abort();
                 deleteCharacter(deletedId);
             }
@@ -298,20 +293,63 @@ std::string GameManager::allToString()
 
     return stream;
 }
+// void GameManager::setBounds()
+// {
+//     if (actorMap.size() > 0)
+//     {
+//         int xPos = actorMap[clientID]->positionX;
+//         int yPos = actorMap[clientID]->positionY;
+
+//         viewLeft = xPos - 100;
+//         viewRight = xPos + 100;
+//         gameview->setCenter(xPos, yPos - 150);
+//     }
+//     else
+//     {
+//         printf("NO ACTORS HERE\n");
+//     }
+// }
+// void GameManager::updateView()
+// {
+//     double time = sentTime / 10;
+//     if (time < 100 && time >= 0)
+//     {
+//         float xPos = actorMap[clientID]->positionX;
+//         float xVel = time * actorMap[clientID]->velocityX;
+
+//         if (xPos <= viewLeft && xVel < 0)
+//         {
+//             gameview->move(xVel, 0);
+//             viewRight += xVel;
+//             viewLeft += xVel;
+//         }
+//         else if (xPos >= viewRight && xVel > 0)
+//         {
+//             gameview->move(xVel, 0);
+//             viewRight += xVel;
+//             viewLeft += xVel;
+//         }
+//     }
+// }
 void GameManager::setBounds()
 {
+    while (bounds.size() != 0)
+    {
+        bounds.pop_back();
+    }
+    sf::RectangleShape *left = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
+    sf::RectangleShape *right = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
+
+    Bound *leftB = new Bound(left, sf::Vector2f(actorMap[clientID]->positionX - 200, -200), "Transparent");
+    Bound *rightB = new Bound(right, sf::Vector2f(actorMap[clientID]->positionX + 200, -200), "Transparent");
+
+    bounds.push_back(leftB);
+    bounds.push_back(rightB);
     if (actorMap.size() > 0)
     {
         int xPos = actorMap[clientID]->positionX;
         int yPos = actorMap[clientID]->positionY;
-
-        viewLeft = xPos - 100;
-        viewRight = xPos + 100;
         gameview->setCenter(xPos, yPos - 150);
-    }
-    else
-    {
-        printf("NO ACTORS HERE\n");
     }
 }
 void GameManager::updateView()
@@ -319,20 +357,19 @@ void GameManager::updateView()
     double time = sentTime / 10;
     if (time < 100 && time >= 0)
     {
-        float xPos = actorMap[clientID]->positionX;
         float xVel = time * actorMap[clientID]->velocityX;
 
-        if (xPos <= viewLeft && xVel < 0)
+        if (actorMap[clientID]->isTouching(bounds[0]->getShape()) && xVel < 0)
         {
             gameview->move(xVel, 0);
-            viewRight += xVel;
-            viewLeft += xVel;
+            bounds[1]->getShape().move(xVel, 0);
+            bounds[0]->getShape().move(xVel, 0);
         }
-        else if (xPos >= viewRight && xVel > 0)
+        else if (actorMap[clientID]->isTouching(bounds[1]->getShape()) && xVel > 0)
         {
             gameview->move(xVel, 0);
-            viewRight += xVel;
-            viewLeft += xVel;
+            bounds[1]->getShape().move(xVel, 0);
+            bounds[0]->getShape().move(xVel, 0);
         }
     }
 }
@@ -359,7 +396,10 @@ void GameManager::render(sf::RenderWindow &window)
     {
         deathObjects[i]->draw(window, hitboxActive);
     }
-
+    for (int i = 0; i < bounds.size(); i++)
+    {
+        bounds[i]->draw(window, hitboxActive);
+    }
 
     // deathObjects[1]->draw(window, hitboxActive);
     // printf("leftBound: %f\n", viewLeft);
