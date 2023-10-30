@@ -35,6 +35,16 @@ void GameManager::initialize(sf::View *view)
     gameview = view;
 
     sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(25000.f, 300.f));
+    sf::RectangleShape *left = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
+    sf::RectangleShape *right = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
+
+    Bound *leftB = new Bound(left, sf::Vector2f(0, -200), "Transparent");
+    Bound *rightB = new Bound(right, sf::Vector2f(0, -200), "Transparent");
+
+    bounds.push_back(leftB);
+    bounds.push_back(rightB);
+
+
 
     createPlatform(500, 2000, 0, 550, "Random");
     createPlatform(250, 30, 600, 550, "Random"); //moving platform 1 index line 226

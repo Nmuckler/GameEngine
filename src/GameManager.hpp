@@ -6,6 +6,7 @@
 #include "DeathZone.hpp"
 #include "GameObject.hpp"
 #include "Timeline.hpp"
+#include "Bound.hpp"
 #include <vector>
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -42,6 +43,8 @@ public:
     // std::iterator<int, Actor*> it;
     std::vector<GameObject *> gameObjects;
     std::vector<DeathZone *> deathObjects;
+    std::vector<Bound *> bounds;
+
 
     sf::View *gameview;
     float viewLeft;
