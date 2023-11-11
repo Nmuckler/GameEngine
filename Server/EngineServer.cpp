@@ -28,6 +28,8 @@ bool moveY = true;
 float valY = 0;
 Timeline timeLine = Timeline();
 int64_t currentTime = 0;
+int64_t prevTime = 0;
+
 int64_t deltatime = 0;
 
 void hoverY(int min, int max, float speed)
@@ -69,7 +71,6 @@ int host = 1;
 std::vector<int> deltedClientId;
 std::string allInfo;
 std::string platInfo;
-
 
 class ThreadRunner
 {
@@ -134,10 +135,10 @@ public:
                     // std::cout << "Id is: " << id << std::endl;
                     infoMap[id] = input;              // set the data at that id
                     timeMap[id] = timeLine.getTime(); // set last client report to the current time
-                    if (id == host)                   // update the platform whenever the host pings the server; In this case the host is client 1
-                    {
-                        hoverY(0, 300, .5); //
-                    }
+                    // if (id == host)                   // update the platform whenever the host pings the server; In this case the host is client 1
+                    // {
+                    //     hoverY(0, 300, .5); //
+                    // }
                 }
             }
         }
@@ -177,18 +178,18 @@ public:
                 for (int i = 0; i < (int)deltedClientId.size(); i++)
                 {
                     infoMap[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
-                    if (deltedClientId[i] == host)
-                    {
-                        for (auto it = infoMap.begin(); it != infoMap.end(); ++it)
-                        {
-                            if (it->second.substr(0, 7) != "deleted")
-                            {
-                                host = it->first;
-                                std::cout << "Setting new host to : " << it->first << std::endl;
-                                break;
-                            }
-                        }
-                    }
+                    // if (deltedClientId[i] == host)
+                    // {
+                    //     for (auto it = infoMap.begin(); it != infoMap.end(); ++it)
+                    //     {
+                    //         if (it->second.substr(0, 7) != "deleted")
+                    //         {
+                    //             host = it->first;
+                    //             std::cout << "Setting new host to : " << it->first << std::endl;
+                    //             break;
+                    //         }
+                    //     }
+                    // }
                 }
             }
         }
@@ -202,16 +203,23 @@ public:
                     allInfo += infoMap[i];
                 }
             }
-
-            
         }
         else if (i == 5)
         {
+            int64_t currentTime = timeLine.getTime();
+            if (currentTime - prevTime > 10)
+            {
+                hoverY(0, 300, .5);
+                prevTime = currentTime;
+            }
             platInfo = "";
             float newY = 550 - valY;
             float newX = 600 - valY;
             platInfo += "platform1" + std::to_string(600) + "," + std::to_string(newY) + "|";
             platInfo += "platform2" + std::to_string(newX) + "," + std::to_string(200) + "|";
+        }
+        else if (i == 6)
+        {
         }
     }
 };
@@ -235,7 +243,6 @@ int main()
     publisher.bind("tcp://*:6666");
     publisher2.bind("tcp://*:7667");
 
-
     std::cout << "Creating the server..." << std::endl;
 
     ThreadRunner t1(1, NULL, &m);
@@ -251,6 +258,9 @@ int main()
 
     ThreadRunner t5(5, NULL, &m);
 
+    // ThreadRunner t6(6, NULL, &m);
+    // std::thread six(run_wrapper, &t6);
+
     while (true)
     {
         std::thread fourth(run_wrapper, &t4);
@@ -264,7 +274,6 @@ int main()
         publisher.send(zmq::buffer(allInfo), zmq::send_flags::none);
 
         publisher2.send(zmq::buffer(platInfo), zmq::send_flags::none);
-
 
         // tell the clients the positions and velocities
         // maybe have a wait or confirms from all the clients before continuing
