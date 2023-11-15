@@ -3,7 +3,6 @@
 void CollisionHandler::onEvent(Event event)
 {
     if(event.getEvent() == event.type::COLLISION || event.getEventInfo() == "COLLISION"){
-        // std::cout << "se " << std::endl;
         event.actor->velocityY = 0;
         event.actor->isGrounded = true;
     }

@@ -111,10 +111,10 @@ void GameManager::checkCollisions()
     {
         if (actorMap[clientID]->isTouching(gameObjects[i]->getShape()))
         {
-            actorMap[clientID]->velocityY = 0;
-            actorMap[clientID]->isGrounded = true;
-            // Event *collision = new Event(Event::COLLISION, "COLLISION", 0, actorMap[clientID]);
-            // eventManager->raise(collision);
+            // actorMap[clientID]->velocityY = 0;
+            // actorMap[clientID]->isGrounded = true;
+            Event *collision = new Event(Event::COLLISION, "COLLISION", 0, actorMap[clientID]);
+            eventManager->raise(collision);
             checkGround = true;
         }
     }
@@ -158,15 +158,15 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
         {
-            if (!timeline.isPaused())
-            {
-                // printf("paused pressed");
-                timeline.pause();
-            }
-            else
-            {
-                timeline.unpause();
-            }
+            // if (!timeline.isPaused())
+            // {
+            //     // printf("paused pressed");
+            //     timeline.pause();
+            // }
+            // else
+            // {
+            //     timeline.unpause();
+            // }
             newInput = true;
             inputs[1] = true;
         }
@@ -174,27 +174,27 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
         {
             // printf("one pressed");
-            timeline.changeTic(4);
+            // timeline.changeTic(4);
             newInput = true;
             inputs[2] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
         {
             // printf("two pressed");
-            timeline.changeTic(2);
+            // timeline.changeTic(2);
             newInput = true;
             inputs[3] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
         {
             // printf("three pressed");
-            timeline.changeTic(1);
+            // timeline.changeTic(1);
             newInput = true;
             inputs[4] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
         {
-            actorMap[idx]->setSpawn(actorMap[idx]->positionX, actorMap[idx]->positionY);
+            // actorMap[idx]->setSpawn(actorMap[idx]->positionX, actorMap[idx]->positionY);
             newInput = true;
             inputs[5] = true;
         }
@@ -203,23 +203,23 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
         {
             // Left key is pressed: move our character to the left
-            actorMap[idx]->moveLeft(moveSpeed);
+            // actorMap[idx]->moveLeft(moveSpeed);
             newInput = true;
             inputs[6] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
         {
             // Right key is pressed: move our character to the right
-            actorMap[idx]->moveRight(moveSpeed);
+            // actorMap[idx]->moveRight(moveSpeed);
             newInput = true;
             inputs[7] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
         {
-            if (actorMap[idx]->isGrounded)
-            {
-                actorMap[idx]->jump();
-            }
+            // if (actorMap[idx]->isGrounded)
+            // {
+            //     actorMap[idx]->jump();
+            // }
             newInput = true;
             inputs[8] = true;
         }
@@ -228,6 +228,18 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
     {
         // Handle the out-of-bounds case (e.g., print an error message)
         std::cout << "Invalid actor ID: " << idx << std::endl;
+    }
+    if (newInput)
+    {
+        // std::cout << "Sending new input" << std::endl;
+        // std::cout << "booleanArray: ";
+        // for (int i = 0; i < 15; ++i)
+        // {
+        //     std::cout << inputs[i] << " ";
+        // }
+        // std::cout << std::endl;
+        Event *userinput = new Event(Event::USERINPUT, "USERINPUT", 0, actorMap[clientID], inputs, &timeline);
+        eventManager->raise(userinput);
     }
     return newInput;
 }

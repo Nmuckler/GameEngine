@@ -10,6 +10,7 @@
 #include "Event.hpp"
 #include "EventHandler.hpp"
 #include "CollisionHandler.hpp"
+#include "UserInputHandler.hpp"
 #include <vector>
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -56,6 +57,7 @@ private:
 
     // handlers
     CollisionHandler C_Handler = CollisionHandler();
+    UserInputHandler UI_Handler = UserInputHandler();
 };
 
 #endif

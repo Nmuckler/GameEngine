@@ -41,7 +41,6 @@ void EventManager::raise(Event *e)
 
 void EventManager::processEvents()
 {
-    std::vector<Event*> tempVector;
 
     while (!pq.empty())
     {
@@ -51,6 +50,8 @@ void EventManager::processEvents()
         {
             pq.pop();
             C_Handler.onEvent(*e);
+            if(e->getEventInfo() == "USERINPUT")
+                UI_Handler.onEvent(*e);
         }
         else
         {
@@ -58,12 +59,7 @@ void EventManager::processEvents()
             break;
         }
 
-        tempVector.push_back(e);
     }
 
-    // Restore the processed events back to the priority queue
-    for (const auto &e : tempVector)
-    {
-        pq.push(e);
-    }
+
 }

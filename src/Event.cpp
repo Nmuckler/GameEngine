@@ -10,6 +10,7 @@ Event::Event(type event, std::string eventInformation, int64_t priority, Actor *
     this->priority = priority;
     this->eventInformation = eventInformation;
     this->actor = actor;
+    
 }
 
 Event::Event(type event, std::string eventInformation, int64_t priority, Actor *actor, bool inputs[], Timeline *timeline)
@@ -21,8 +22,11 @@ Event::Event(type event, std::string eventInformation, int64_t priority, Actor *
     this->event = event;
     this->priority = priority;
     this->eventInformation = eventInformation;
+    this->actor = actor;
+
+
     this->timeline = timeline;
-    for(int i = 0; i < boolsize; i++)
+    for (int i = 0; i < boolsize; i++)
         booleanArray[i] = inputs[i];
 }
 

@@ -5,6 +5,8 @@ void UserInputHandler::onEvent(Event event)
     float moveSpeed = 2;
     if (event.getEvent() == event.type::COLLISION || event.getEventInfo() == "USERINPUT")
     {
+        // std::cout << "I was called" << std::endl;
+
         // Turn hit boxes on or off
         // if (sf::Keyboard::isKeyPressed(sf::Keyboard::H))
         // {
@@ -23,7 +25,6 @@ void UserInputHandler::onEvent(Event event)
             {
                 event.timeline->unpause();
             }
-
         }
 
         if (event.booleanArray[2])
@@ -35,32 +36,31 @@ void UserInputHandler::onEvent(Event event)
         {
             // printf("two pressed");
             event.timeline->changeTic(2);
-
         }
         if (event.booleanArray[4])
         {
             // printf("three pressed");
             event.timeline->changeTic(1);
-
         }
         if (event.booleanArray[5])
         {
             event.actor->setSpawn(event.actor->positionX, event.actor->positionY);
-
         }
 
         // Controls
         if (event.booleanArray[6])
         {
             // Left key is pressed: move our character to the left
-            event.actor->moveLeft(moveSpeed);
+            // std::cout << "Left key is pressed: move our character to the left" << std::endl;
 
+            event.actor->moveLeft(moveSpeed);
         }
         if (event.booleanArray[7])
         {
             // Right key is pressed: move our character to the right
-            event.actor->moveRight(moveSpeed);
+            // std::cout << "Right key is pressed: move our character to the right" << std::endl;
 
+            event.actor->moveRight(moveSpeed);
         }
         if (event.booleanArray[8])
         {
@@ -68,7 +68,6 @@ void UserInputHandler::onEvent(Event event)
             {
                 event.actor->jump();
             }
-
         }
     }
 }
