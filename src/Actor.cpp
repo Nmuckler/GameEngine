@@ -6,6 +6,7 @@ Actor::Actor(sf::Shape *shape, sf::Vector2f position, const std::string &texture
     this->id = id;
     spawnX = position.x;
     spawnY = position.y;
+    isGrounded = false;
 }
 
 int Actor::getId()

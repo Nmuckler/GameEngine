@@ -7,6 +7,9 @@
 #include "GameObject.hpp"
 #include "Timeline.hpp"
 #include "Bound.hpp"
+#include "EventManager.hpp"
+#include "EventHandler.hpp"
+#include "Event.hpp"
 #include <vector>
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -29,6 +32,8 @@ public:
     void createPlatform(float xsize, float ysize, float xPos, float yPos, const std::string &texturePath);
     void createCharacter(int id);
     void deleteCharacter(int id);
+    void checkCollisions();
+    void checkDeath();
     bool checkInputs(sf::RenderWindow *window); // check input for the specific Client runnning
     void parsePos(std::string str);
     void parseEnv(std::string str);
@@ -47,6 +52,8 @@ public:
     std::vector<DeathZone *> deathObjects;
     std::vector<Bound *> bounds;
 
+    EventManager *eventManager = EventManager().getInstance();
+    Timeline timeline;
 
     sf::View *gameview;
     float viewLeft;

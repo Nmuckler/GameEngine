@@ -9,6 +9,7 @@ public:
     int getId();
     void setSpawn(int x, int y);
     void respawn();
+    bool isGrounded;
 private:
     int id;
     int spawnX;

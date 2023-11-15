@@ -2,11 +2,9 @@
 
 float moveSpeed = 2;
 bool hitboxActive = false;
-Timeline timeline = Timeline();
 int64_t currTime = 0;
 int64_t lastTime = 0;
 int64_t deltaTime = 0;
-bool grounded = true;
 double sentTime = 0;
 
 GameManager *GameManager::singleton = nullptr;
@@ -32,6 +30,7 @@ GameManager *GameManager::getInstance()
  */
 void GameManager::initialize(sf::View *view)
 {
+    timeline = Timeline();
     gameview = view;
 
     sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(25000.f, 300.f));
@@ -105,35 +104,45 @@ void GameManager::deleteCharacter(int id)
     actorMap[id]->getShape().setFillColor(sf::Color::Transparent);
 }
 
+void GameManager::checkCollisions()
+{
+    bool checkGround = false;
+    for (int i = 0; i < gameObjects.size(); i++)
+    {
+        if (actorMap[clientID]->isTouching(gameObjects[i]->getShape()))
+        {
+            actorMap[clientID]->velocityY = 0;
+            actorMap[clientID]->isGrounded = true;
+            // Event *collision = new Event(Event::COLLISION, "COLLISION", 0, actorMap[clientID]);
+            // eventManager->raise(collision);
+            checkGround = true;
+        }
+    }
+    if (!checkGround)
+    {
+        actorMap[clientID]->isGrounded = false;
+    }
+}
+
+void GameManager::checkDeath()
+{
+
+    // check for death
+    if (actorMap[clientID]->isTouching(deathObjects[0]->getShape()))
+    {
+        actorMap[clientID]->respawn();
+        setBounds();
+    }
+}
+
 bool GameManager::checkInputs(sf::RenderWindow *window)
 {
     int idx = clientID;
     bool newInput = false;
+    bool inputs[15] = {0};
 
     if (idx >= 0 && clientID <= actorMap.size())
     {
-
-        bool checkGround = false;
-        for (int i = 0; i < gameObjects.size(); i++)
-        {
-            if (actorMap[idx]->isTouching(gameObjects[i]->getShape()))
-            {
-                actorMap[idx]->velocityY = 0;
-                grounded = true;
-                checkGround = true;
-            }
-        }
-        if (!checkGround)
-        {
-            grounded = false;
-        }
-
-        // check for death
-        if (actorMap[idx]->isTouching(deathObjects[0]->getShape()))
-        {
-            actorMap[idx]->respawn();
-            setBounds();
-        }
 
         if (!window->hasFocus())
         {
@@ -145,6 +154,7 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
         {
             hitboxActive = !hitboxActive;
             newInput = true;
+            inputs[0] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
         {
@@ -158,6 +168,7 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
                 timeline.unpause();
             }
             newInput = true;
+            inputs[1] = true;
         }
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
@@ -165,23 +176,27 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
             // printf("one pressed");
             timeline.changeTic(4);
             newInput = true;
+            inputs[2] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
         {
             // printf("two pressed");
             timeline.changeTic(2);
             newInput = true;
+            inputs[3] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
         {
             // printf("three pressed");
             timeline.changeTic(1);
             newInput = true;
+            inputs[4] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
         {
             actorMap[idx]->setSpawn(actorMap[idx]->positionX, actorMap[idx]->positionY);
             newInput = true;
+            inputs[5] = true;
         }
 
         // Controls
@@ -190,20 +205,23 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
             // Left key is pressed: move our character to the left
             actorMap[idx]->moveLeft(moveSpeed);
             newInput = true;
+            inputs[6] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
         {
             // Right key is pressed: move our character to the right
             actorMap[idx]->moveRight(moveSpeed);
             newInput = true;
+            inputs[7] = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
         {
-            if (grounded)
+            if (actorMap[idx]->isGrounded)
             {
                 actorMap[idx]->jump();
             }
             newInput = true;
+            inputs[8] = true;
         }
     }
     else
@@ -305,44 +323,7 @@ std::string GameManager::allToString()
 
     return stream;
 }
-// void GameManager::setBounds()
-// {
-//     if (actorMap.size() > 0)
-//     {
-//         int xPos = actorMap[clientID]->positionX;
-//         int yPos = actorMap[clientID]->positionY;
 
-//         viewLeft = xPos - 100;
-//         viewRight = xPos + 100;
-//         gameview->setCenter(xPos, yPos - 150);
-//     }
-//     else
-//     {
-//         printf("NO ACTORS HERE\n");
-//     }
-// }
-// void GameManager::updateView()
-// {
-//     double time = sentTime / 10;
-//     if (time < 100 && time >= 0)
-//     {
-//         float xPos = actorMap[clientID]->positionX;
-//         float xVel = time * actorMap[clientID]->velocityX;
-
-//         if (xPos <= viewLeft && xVel < 0)
-//         {
-//             gameview->move(xVel, 0);
-//             viewRight += xVel;
-//             viewLeft += xVel;
-//         }
-//         else if (xPos >= viewRight && xVel > 0)
-//         {
-//             gameview->move(xVel, 0);
-//             viewRight += xVel;
-//             viewLeft += xVel;
-//         }
-//     }
-// }
 void GameManager::setBounds()
 {
     while (bounds.size() != 0)
@@ -393,7 +374,7 @@ void GameManager::render(sf::RenderWindow &window)
 
     if (!timeline.isPaused())
     {
-        actorMap[clientID]->update(sentTime, grounded);
+        actorMap[clientID]->update(sentTime, actorMap[clientID]->isGrounded);
     }
     // Draw the character
     for (auto it = actorMap.begin(); it != actorMap.end(); ++it)

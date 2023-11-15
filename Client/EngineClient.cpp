@@ -3,6 +3,8 @@
 #include "../src/GameObject.hpp"
 #include "../src/Timeline.hpp"
 #include "../src/GameManager.hpp"
+#include "../src/EventManager.hpp"
+
 #include <zmq.hpp>
 #include <map>
 #include <csignal>
@@ -121,24 +123,8 @@ void run_wrapper(ThreadRunner *fe)
     fe->run();
 }
 
-// void signalHandler(int signal)
-// {
-
-//     std::cerr << "Signal " << signal << " received. Performing cleanup or handling as needed." << std::endl;
-//     zmq::context_t context(1);
-//     zmq::socket_t cancel(context, zmq::socket_type::req);
-//     cancel.connect("tcp://localhost:8888"); // connect to server thread
-//     cancel.send(zmq::buffer(std::to_string(clientID)), zmq::send_flags::none);
-//     std::cout << "Disconnecting to the server with ID: " << clientID << std::endl;
-//     exit(signal);
-// }
-
 int main()
 {
-    // signal(SIGINT, signalHandler);   // Handle Ctrl+C
-    // signal(SIGTERM, signalHandler);  // Handle termination request
-    // signal(SIGSEGV, signalHandler);  // Handle segmentation fault
-    // signal(SIGFPE, signalHandler);   // Handle floating-point exception
 
     std::mutex m;
     sf::RenderWindow window(sf::VideoMode(800, 600), "Client Window");
@@ -216,7 +202,14 @@ int main()
             std::thread third(run_wrapper, &t3);
 
             if (clientID > 0)
+            {
+                manager->checkCollisions();
+                manager->checkDeath();
                 manager->checkInputs(&window);
+            }
+
+            std::unique_lock<std::mutex> eventlock(manager->eventManager->lock);
+            manager->eventManager->processEvents();
 
             std::string newPos = manager->toString(clientID); // send out position
 
