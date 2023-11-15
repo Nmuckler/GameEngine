@@ -7,7 +7,7 @@
 #include "GameObject.hpp"
 #include "Timeline.hpp"
 #include "Bound.hpp"
-
+#include <zmq.hpp>
 #include <vector>
 #include <iostream>
 #include <iterator>

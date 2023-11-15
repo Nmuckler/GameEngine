@@ -9,7 +9,7 @@ You need to do this in the Server and Client Folder
 
 After program is running you can:
 
-control the actor with the left and right arrow keys.
+control the actor with the A and D arrow keys.
 
 Press P button to pause
 Press space bar to jump

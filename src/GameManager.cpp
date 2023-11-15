@@ -34,16 +34,8 @@ void GameManager::initialize(sf::View *view)
     gameview = view;
 
     sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(25000.f, 300.f));
-    sf::RectangleShape *deathtangle2 = new sf::RectangleShape(sf::Vector2f(300.f, 300.f));
+    sf::RectangleShape *deathtangle2 = new sf::RectangleShape(sf::Vector2f(300.f, 3000.f));
 
-    // sf::RectangleShape *left = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
-    // sf::RectangleShape *right = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
-
-    // Bound *leftB = new Bound(left, sf::Vector2f(0, -200), "Red");
-    // Bound *rightB = new Bound(right, sf::Vector2f(0, -200), "Red");
-
-    // bounds.push_back(leftB);
-    // bounds.push_back(rightB);
 
     createPlatform(500, 2000, 0, 550, "Red");
     createPlatform(250, 30, 600, 550, "Blue");   // moving platform 1 index line 226
@@ -53,7 +45,7 @@ void GameManager::initialize(sf::View *view)
     createPlatform(500, 2000, 1000, 550, "Magenta");
 
     DeathZone *deathzone1 = new DeathZone(deathtangle, sf::Vector2f(-10000, 675), "Transparent");
-    DeathZone *deathzone2 = new DeathZone(deathtangle2, sf::Vector2f(0, 675), "White");
+    DeathZone *deathzone2 = new DeathZone(deathtangle2, sf::Vector2f(-300, 200), "White");
 
     deathObjects.push_back(deathzone1);
     deathObjects.push_back(deathzone2);
@@ -132,13 +124,19 @@ void GameManager::checkDeath()
 {
 
     // check for death
-    if (actorMap[clientID]->alive && (actorMap[clientID]->isTouching(deathObjects[0]->getShape()) || actorMap[clientID]->isTouching(deathObjects[1]->getShape())))
+    if (actorMap[clientID]->alive)
     {
-        Event *death = new Event(Event::DEATH, "DEATH", timeline.getTime() + 0, actorMap[clientID]);
-        eventManager->raise(death);
-        Event *spawn = new Event(Event::SPAWN, "SPAWN", timeline.getTime() + 1000, actorMap[clientID]);
-        eventManager->raise(spawn);
-
+        for (int i = 0; i < deathObjects.size(); i++)
+        {
+            if (actorMap[clientID]->isTouching(deathObjects[i]->getShape()))
+            {
+                Event *death = new Event(Event::DEATH, "DEATH", timeline.getTime() + 0, actorMap[clientID]);
+                eventManager->raise(death);
+                Event *spawn = new Event(Event::SPAWN, "SPAWN", timeline.getTime() + 1000, actorMap[clientID]);
+                eventManager->raise(spawn);
+                break;
+            }
+        }
     }
 }
 
@@ -412,10 +410,6 @@ void GameManager::render(sf::RenderWindow &window)
     {
         bounds[i]->draw(window, hitboxActive);
     }
-
-    // deathObjects[1]->draw(window, hitboxActive);
-    // printf("leftBound: %f\n", viewLeft);
-    // printf("rightBound: %f\n", viewRight);
 
     // updateView();
     window.setView(*gameview);

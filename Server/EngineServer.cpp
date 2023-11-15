@@ -142,7 +142,7 @@ public:
                 }
             }
         }
-        else if (i == 2)
+        else if (i == 2) // check timeouts
         {
             while (true)
             {
@@ -178,22 +178,10 @@ public:
                 for (int i = 0; i < (int)deltedClientId.size(); i++)
                 {
                     infoMap[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
-                    // if (deltedClientId[i] == host)
-                    // {
-                    //     for (auto it = infoMap.begin(); it != infoMap.end(); ++it)
-                    //     {
-                    //         if (it->second.substr(0, 7) != "deleted")
-                    //         {
-                    //             host = it->first;
-                    //             std::cout << "Setting new host to : " << it->first << std::endl;
-                    //             break;
-                    //         }
-                    //     }
-                    // }
                 }
             }
         }
-        else if (i == 4)
+        else if (i == 4) // create all client info to publish
         {
             allInfo = "";
             for (int i = 1; i <= numClients; i++)
@@ -204,7 +192,7 @@ public:
                 }
             }
         }
-        else if (i == 5)
+        else if (i == 5) // platform updater
         {
             int64_t currentTime = timeLine.getTime();
             if (currentTime - prevTime > 10)
@@ -220,6 +208,24 @@ public:
         }
         else if (i == 6)
         {
+            while (true)
+            {
+                zmq::context_t context(2);
+                zmq::socket_t socket(context, zmq::socket_type::rep);
+                socket.bind("tcp://*:2332");
+                zmq::message_t request;
+                socket.recv(request, zmq::recv_flags::none);                            // wait to recieve a message from a client
+                std::string input(static_cast<char *>(request.data()), request.size()); // parse that as a string
+                // Send the client's Id to the client
+                const char *input_cstr = input.c_str();
+
+                int id;
+                char event;
+                // char input;
+                sscanf(input_cstr, "%d%c", &id, &event); // scan the first number which is the id
+                if (event == 'D')
+                    std::cout << "Client: " << id << " died" << std::endl;
+            }
         }
     }
 };
@@ -257,6 +263,9 @@ int main()
     ThreadRunner t4(4, NULL, &m);
 
     ThreadRunner t5(5, NULL, &m);
+
+    ThreadRunner t6(6, NULL, &m);
+    std::thread sixth(run_wrapper, &t6);
 
     // ThreadRunner t6(6, NULL, &m);
     // std::thread six(run_wrapper, &t6);
