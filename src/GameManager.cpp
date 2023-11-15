@@ -34,6 +34,8 @@ void GameManager::initialize(sf::View *view)
     gameview = view;
 
     sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(25000.f, 300.f));
+    sf::RectangleShape *deathtangle2 = new sf::RectangleShape(sf::Vector2f(300.f, 300.f));
+
     // sf::RectangleShape *left = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
     // sf::RectangleShape *right = new sf::RectangleShape(sf::Vector2f(30.f, 1000.f));
 
@@ -51,8 +53,10 @@ void GameManager::initialize(sf::View *view)
     createPlatform(500, 2000, 1000, 550, "Magenta");
 
     DeathZone *deathzone1 = new DeathZone(deathtangle, sf::Vector2f(-10000, 675), "Transparent");
+    DeathZone *deathzone2 = new DeathZone(deathtangle2, sf::Vector2f(0, 675), "White");
 
     deathObjects.push_back(deathzone1);
+    deathObjects.push_back(deathzone2);
 }
 
 void GameManager::updateDeltaTime()
@@ -113,7 +117,7 @@ void GameManager::checkCollisions()
         {
             // actorMap[clientID]->velocityY = 0;
             // actorMap[clientID]->isGrounded = true;
-            Event *collision = new Event(Event::COLLISION, "COLLISION", 0, actorMap[clientID]);
+            Event *collision = new Event(Event::COLLISION, "COLLISION", timeline.getTime() + 0, actorMap[clientID]);
             eventManager->raise(collision);
             checkGround = true;
         }
@@ -128,10 +132,13 @@ void GameManager::checkDeath()
 {
 
     // check for death
-    if (actorMap[clientID]->isTouching(deathObjects[0]->getShape()))
+    if (actorMap[clientID]->alive && (actorMap[clientID]->isTouching(deathObjects[0]->getShape()) || actorMap[clientID]->isTouching(deathObjects[1]->getShape())))
     {
-        actorMap[clientID]->respawn();
-        setBounds();
+        Event *death = new Event(Event::DEATH, "DEATH", timeline.getTime() + 0, actorMap[clientID]);
+        eventManager->raise(death);
+        Event *spawn = new Event(Event::SPAWN, "SPAWN", timeline.getTime() + 1000, actorMap[clientID]);
+        eventManager->raise(spawn);
+
     }
 }
 
@@ -141,7 +148,7 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
     bool newInput = false;
     bool inputs[15] = {0};
 
-    if (idx >= 0 && clientID <= actorMap.size())
+    if (idx >= 0 && clientID <= actorMap.size() && actorMap[idx]->alive)
     {
 
         if (!window->hasFocus())
@@ -185,13 +192,13 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
             newInput = true;
             inputs[3] = true;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
-        {
-            // printf("three pressed");
-            // timeline.changeTic(1);
-            newInput = true;
-            inputs[4] = true;
-        }
+        // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
+        // {
+        //     // printf("three pressed");
+        //     // timeline.changeTic(1);
+        //     newInput = true;
+        //     inputs[4] = true;
+        // }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
         {
             // actorMap[idx]->setSpawn(actorMap[idx]->positionX, actorMap[idx]->positionY);
@@ -227,7 +234,7 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
     else
     {
         // Handle the out-of-bounds case (e.g., print an error message)
-        std::cout << "Invalid actor ID: " << idx << std::endl;
+        // std::cout << "Invalid actor ID: " << idx << std::endl;
     }
     if (newInput)
     {
@@ -238,7 +245,7 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
         //     std::cout << inputs[i] << " ";
         // }
         // std::cout << std::endl;
-        Event *userinput = new Event(Event::USERINPUT, "USERINPUT", 0, actorMap[clientID], inputs, &timeline);
+        Event *userinput = new Event(Event::USERINPUT, "USERINPUT", timeline.getTime() + 0, actorMap[clientID], inputs, &timeline);
         eventManager->raise(userinput);
     }
     return newInput;
@@ -384,7 +391,7 @@ void GameManager::render(sf::RenderWindow &window)
     updateView();
     window.clear(sf ::Color::Black);
 
-    if (!timeline.isPaused())
+    if (!timeline.isPaused() && actorMap[clientID]->alive)
     {
         actorMap[clientID]->update(sentTime, actorMap[clientID]->isGrounded);
     }

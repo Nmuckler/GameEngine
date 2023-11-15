@@ -5,28 +5,28 @@ Object::Object(sf::Shape &shape, sf::Vector2f position, const std::string &textu
 
     static std::default_random_engine randomEngine(std::random_device{}());
     static std::uniform_int_distribution<int> colorDistribution(0, 255);
+    setColor(texturePath);
+    // if (colorMap.find(texturePath) != colorMap.end())
+    // {
+    //     this->shape.setFillColor(colorMap.at(texturePath));
+    // }
+    // else if (texturePath == "Random")
+    // {
+    //     srand(static_cast<unsigned>(time(nullptr)));
 
-    if (colorMap.find(texturePath) != colorMap.end())
-    {
-        this->shape.setFillColor(colorMap.at(texturePath));
-    }
-    else if (texturePath == "Random")
-    {
-        srand(static_cast<unsigned>(time(nullptr)));
-
-        int red = colorDistribution(randomEngine);
-        int blue = colorDistribution(randomEngine);
-        int green = colorDistribution(randomEngine);
-        this->shape.setFillColor(sf::Color(red, green, blue));
-    }
-    else if (texture.loadFromFile(texturePath))
-    {
-        this->shape.setTexture(&texture);
-    }
-    else
-    {
-        this->shape.setFillColor(sf::Color::Magenta);
-    }
+    //     int red = colorDistribution(randomEngine);
+    //     int blue = colorDistribution(randomEngine);
+    //     int green = colorDistribution(randomEngine);
+    //     this->shape.setFillColor(sf::Color(red, green, blue));
+    // }
+    // else if (texture.loadFromFile(texturePath))
+    // {
+    //     this->shape.setTexture(&texture);
+    // }
+    // else
+    // {
+    //     this->shape.setFillColor(sf::Color::Magenta);
+    // }
     this->shape.setPosition(position);
     positionX = position.x;
     positionY = position.y;
@@ -52,6 +52,33 @@ void Object::draw(sf::RenderWindow &window, bool drawBoundingBox)
 sf::Shape &Object::getShape()
 {
     return shape;
+}
+
+void Object::setColor(const std::string &texturePath)
+{
+    static std::default_random_engine randomEngine(std::random_device{}());
+    static std::uniform_int_distribution<int> colorDistribution(0, 255);
+    if (colorMap.find(texturePath) != colorMap.end())
+    {
+        this->shape.setFillColor(colorMap.at(texturePath));
+    }
+    else if (texturePath == "Random")
+    {
+        srand(static_cast<unsigned>(time(nullptr)));
+
+        int red = colorDistribution(randomEngine);
+        int blue = colorDistribution(randomEngine);
+        int green = colorDistribution(randomEngine);
+        this->shape.setFillColor(sf::Color(red, green, blue));
+    }
+    else if (texture.loadFromFile(texturePath))
+    {
+        this->shape.setTexture(&texture);
+    }
+    else
+    {
+        this->shape.setFillColor(sf::Color::Magenta);
+    }
 }
 
 void Object::move(float velX, float velY)
@@ -117,7 +144,11 @@ void Object::update(int64_t deltaTime, bool grounded)
 
     double time = deltaTime;
     // printf("Received time: %f\n", time);
-    time /= 10; // making it smaller to make it more digestable in the enviroment
+    // making it smaller to make it more digestable in the enviroment
+    do
+    {
+        time /= 10;
+    } while (time > 100);
     // printf("Velocity x: %f\n", velocityX * time);
     // printf("Velocity y: %f\n", velocityY * time);
     // printf("Position x: %f\n", positionX);

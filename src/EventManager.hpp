@@ -11,6 +11,8 @@
 #include "EventHandler.hpp"
 #include "CollisionHandler.hpp"
 #include "UserInputHandler.hpp"
+#include "DeathHandler.hpp"
+#include "SpawnHandler.hpp"
 #include <vector>
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -20,7 +22,6 @@
 #include <string>
 #include <sstream>
 #include <queue>
-
 #include <list>
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
@@ -36,7 +37,7 @@ public:
 
     struct Compare
     {
-        bool operator()(Event* &e1, Event* &e2) const
+        bool operator()(Event *&e1, Event *&e2) const
         {
             // Lower priority is considered "greater" for std::priority_queue
             return e1->getPriority() > e2->getPriority();
@@ -48,16 +49,18 @@ public:
     void raise(Event *e);
     void processEvents();
     std::priority_queue<Event *, std::vector<Event *>, Compare> pq;
+    bool calledrespawn;
 
 private:
     std::map<Event::type, std::list<EventHandler *>> handlers;
     std::vector<Event *> raised_events;
     Timeline timeline = Timeline();
     static EventManager *singleton;
-
     // handlers
     CollisionHandler C_Handler = CollisionHandler();
     UserInputHandler UI_Handler = UserInputHandler();
+    DeathHandler D_Handler = DeathHandler();
+    SpawnHandler S_Handler = SpawnHandler();
 };
 
 #endif

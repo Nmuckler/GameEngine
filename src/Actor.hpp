@@ -9,7 +9,9 @@ public:
     int getId();
     void setSpawn(int x, int y);
     void respawn();
+    void kill();
     bool isGrounded;
+    bool alive;
 private:
     int id;
     int spawnX;

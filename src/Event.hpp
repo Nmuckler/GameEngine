@@ -7,6 +7,7 @@
 #include "GameObject.hpp"
 #include "Timeline.hpp"
 #include "Bound.hpp"
+
 #include <vector>
 #include <iostream>
 #include <iterator>
@@ -39,12 +40,13 @@ public:
     Timeline *timeline;
     int boolsize = 15;
     bool booleanArray[15];
-    Actor* actor;
+    Actor *actor;
 
 private:
     type event;
     int64_t priority;
     std::string eventInformation;
+
 };
 
 #endif

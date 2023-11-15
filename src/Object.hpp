@@ -19,7 +19,7 @@ public:
 
     sf::Shape &getShape();
 
-    bool colorExists(const std::string &texturePath);
+    void setColor(const std::string &texturePath);
 
     void draw(sf::RenderWindow &window, bool drawBoundingBox);
 

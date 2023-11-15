@@ -41,6 +41,8 @@ void EventManager::raise(Event *e)
 
 void EventManager::processEvents()
 {
+    calledrespawn = false;
+
 
     while (!pq.empty())
     {
@@ -49,17 +51,22 @@ void EventManager::processEvents()
         if (e->getPriority() <= timeline.getTime())
         {
             pq.pop();
-            C_Handler.onEvent(*e);
-            if(e->getEventInfo() == "USERINPUT")
+            if (e->getEventInfo() == "COLLISION")
+                C_Handler.onEvent(*e);
+            else if (e->getEventInfo() == "USERINPUT")
                 UI_Handler.onEvent(*e);
+            else if (e->getEventInfo() == "SPAWN")
+            {
+                S_Handler.onEvent(*e);
+                calledrespawn = true;
+            }
+            else if (e->getEventInfo() == "DEATH")
+                D_Handler.onEvent(*e);
         }
         else
         {
             // No more events with priority less than or equal to the current time
             break;
         }
-
     }
-
-
 }
