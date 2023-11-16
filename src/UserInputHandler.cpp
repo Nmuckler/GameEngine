@@ -2,7 +2,7 @@
 
 void UserInputHandler::onEvent(Event event)
 {
-    float moveSpeed = 2;
+    float moveSpeed = 3;
     if (event.getEvent() == event.type::COLLISION || event.getEventInfo() == "USERINPUT")
     {
         // std::cout << "I was called" << std::endl;
