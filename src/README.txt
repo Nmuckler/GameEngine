@@ -1,9 +1,8 @@
 For compiling and running this program, run these commands after the other:
 
-1. make init
-2. make clean
-3. make
-4. ./main
+
+1. make
+2. ./main
 
 You need to do this in the Server and Client Folder
 
