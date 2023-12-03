@@ -48,7 +48,7 @@ void GameManager::initialize(sf::View *view)
     DeathZone *deathzone2 = new DeathZone(deathtangle2, sf::Vector2f(-300, 200), "White");
 
     deathObjects.push_back(deathzone1);
-    deathObjects.push_back(deathzone2);
+    // deathObjects.push_back(deathzone2);
 }
 
 void GameManager::updateDeltaTime()
