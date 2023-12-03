@@ -1,7 +1,7 @@
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 src := $(call rwildcard,./,*.cpp)
 
-obj = $(patsubst %.cpp,%.o,$(src))
+obj = $(patsubst %.cpp,%.o,$(src)) $(call rwildcard,../src/,*.cpp)
 
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lzmq
 
@@ -43,7 +43,7 @@ endif
 
 .PHONY: clean
 clean:
-	rm -f $(obj) main
+	rm -f $(filter-out %.cpp, $(obj)) main
 
 .PHONY: init
 init:

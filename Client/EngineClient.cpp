@@ -1,10 +1,13 @@
-#include "Actor.hpp"
-#include "Object.hpp"
-#include "GameObject.hpp"
-#include "Timeline.hpp"
-#include "GameManager.hpp"
+#include "../src/Actor.hpp"
+#include "../src/Object.hpp"
+#include "../src/GameObject.hpp"
+#include "../src/Timeline.hpp"
+#include "../src/GameManager.hpp"
+#include "../src/EventManager.hpp"
+
 #include <zmq.hpp>
 #include <map>
+#include <csignal>
 #include <string>
 #include <iostream>
 #include <thread>
@@ -17,7 +20,7 @@
 
 #define sleep(n) Sleep(n)
 #endif
-std::map<int, char> map;
+int clientID;
 
 class ThreadRunner
 {
@@ -59,6 +62,8 @@ public:
                 subscriber.connect("tcp://localhost:6666");
 
                 zmq::message_t update; // get the update
+                // std::cout << "waiting to receive..."
+                //           << std::endl;
                 subscriber.recv(update, zmq::recv_flags::none);
                 std::string updateMessage(static_cast<const char *>(update.data()), update.size());
                 // std::cout << "received: \n"
@@ -77,6 +82,36 @@ public:
             std::unique_lock<std::mutex> cv_lock(*this->_mutex);
             manager->updateDeltaTime();
         }
+        else if (i == 2) // send this clients info to server and wait for publish
+        {
+            try
+            {
+                std::unique_lock<std::mutex> cv_lock(*this->_mutex);
+                //...
+
+                // compute deltatime from game manager
+                // manager->updateDeltaTime();
+
+                zmq::context_t context(1);
+                zmq::socket_t subscriber(context, zmq::socket_type::sub);
+                subscriber.setsockopt(ZMQ_CONFLATE, 1);
+                // subscriber.set(zmq::sockopt::subscribe, "", 0);
+                subscriber.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+                subscriber.connect("tcp://localhost:7667");
+                zmq::message_t update; // get the update
+                subscriber.recv(update, zmq::recv_flags::none);
+                std::string updateMessage(static_cast<const char *>(update.data()), update.size());
+                // std::cout << "received: \n"
+                //           << updateMessage << std::endl;
+                manager->parseEnv(updateMessage);
+
+                // process inputs from game manager
+            }
+            catch (...)
+            {
+                std::cerr << "Thread " << i << " caught exception." << std::endl;
+            }
+        }
     }
 };
 
@@ -90,6 +125,7 @@ void run_wrapper(ThreadRunner *fe)
 
 int main()
 {
+
     std::mutex m;
     sf::RenderWindow window(sf::VideoMode(800, 600), "Client Window");
     window.setFramerateLimit(60);
@@ -111,9 +147,9 @@ int main()
     std::string sendID = "-1";                               // Request a new client ID
     socket.send(zmq::buffer(sendID), zmq::send_flags::none); // send that to server
 
-    zmq::message_t reply;                                              // get reply from server
-    socket.recv(reply, zmq::recv_flags::none);                         // receive
-    int clientID = std::atoi(static_cast<const char *>(reply.data())); // process as an int
+    zmq::message_t reply;                                          // get reply from server
+    socket.recv(reply, zmq::recv_flags::none);                     // receive
+    clientID = std::atoi(static_cast<const char *>(reply.data())); // process as an int
     socket.close();
 
     // NEED TO CREATE CHARACTERS IF ID > 1
@@ -130,6 +166,8 @@ int main()
 
     ThreadRunner t1(0, NULL, &m, manager, clientID); // dtime stuff
     ThreadRunner t2(1, NULL, &m, manager, clientID); // input stuff
+    ThreadRunner t3(2, NULL, &m, manager, clientID); // input stuff
+
     try
     {
         while (window.isOpen())
@@ -152,7 +190,8 @@ int main()
                 {
                     zmq::socket_t cancel(context, zmq::socket_type::req);
                     cancel.connect("tcp://localhost:8888"); // connect to server thread
-                    cancel.send(zmq::buffer("c" + std::to_string(clientID)), zmq::send_flags::none);
+                    cancel.send(zmq::buffer(std::to_string(clientID)), zmq::send_flags::none);
+                    std::cout << "Disconnecting to the server with ID: " << clientID << std::endl;
                     window.close();
                 }
             }
@@ -160,16 +199,28 @@ int main()
             // wait for threads to finish
             std::thread first(run_wrapper, &t1);
             std::thread second(run_wrapper, &t2);
+            std::thread third(run_wrapper, &t3);
 
             if (clientID > 0)
+            {
+                manager->checkCollisions();
+                manager->checkDeath();
                 manager->checkInputs(&window);
+            }
 
+            std::unique_lock<std::mutex> eventlock(manager->eventManager->lock);
+            manager->eventManager->processEvents();
+            if(manager->eventManager->calledrespawn){
+                manager->setBounds();
+            }
             std::string newPos = manager->toString(clientID); // send out position
 
             socket.send(zmq::buffer(newPos), zmq::send_flags::none); // send client info to server
 
-            first.join();  // receive data
+            first.join(); // receive data
+            third.join();
             second.join(); // update delatime
+
             // manager->updateView();
             manager->render(window);
         }

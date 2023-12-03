@@ -24,10 +24,13 @@
 #define sleep(n) Sleep(n)
 #endif
 
-int host;
-
 bool moveY = true;
 float valY = 0;
+Timeline timeLine = Timeline();
+int64_t currentTime = 0;
+int64_t prevTime = 0;
+
+int64_t deltatime = 0;
 
 void hoverY(int min, int max, float speed)
 {
@@ -61,9 +64,13 @@ void hoverY(int min, int max, float speed)
     }
 }
 
-std::map<int, std::string> map; // map to keep track of clientID, input
+std::map<int, std::string> infoMap; // map to keep track of clientID, input
+std::map<int, int64_t> timeMap;
 int numClients = 0;
-bool ready = false;
+int host = 1;
+std::vector<int> deltedClientId;
+std::string allInfo;
+std::string platInfo;
 
 class ThreadRunner
 {
@@ -103,7 +110,7 @@ public:
                     socket.send(zmq::buffer(sendID), zmq::send_flags::none); // send ID to client
                     std::cout << "Received New Client" << std::endl;         // have server tell that client is here
 
-                    map[numClients + 1] = "";
+                    infoMap[numClients + 1] = "";
 
                     // // TEMP
                     numClients++;
@@ -111,12 +118,14 @@ public:
                     // put this new character in the array
                     std::cout << "Client: " << numClients << " has been created" << std::endl;
                 }
-                else if (strlen(input_cstr) == 2)
+                else if (strlen(input_cstr) == 1 || strlen(input_cstr) == 2)
                 {
-                    int id;
-                    sscanf(input_cstr, "%d", &id);
-                    map[id] = ""; // set the map info to an empty string
-                    std::cout << "Client: " << id << " has been deleted (not really)" << std::endl;
+                    int deleteId;
+                    sscanf(input_cstr, "%d", &deleteId);
+                    // std::cout << "Received delete message: " << input_cstr << "going to delete client" << deleteId << std::endl; // have server tell that client is here
+                    // std::cout << "map was prev: " << map[deleteId] << std::endl; // have server tell that client is here
+                    deltedClientId.push_back(deleteId);
+                    std::cout << "Client: " << deleteId << " has been deleted" << std::endl;
                 }
                 else // recieved client info PUBLISH INFOMARION
                 {
@@ -124,12 +133,98 @@ public:
                     // char input;
                     sscanf(input_cstr, "%d", &id); // scan the first number which is the id
                     // std::cout << "Id is: " << id << std::endl;
-                    map[id] = input; // set the data at that id
-                    if (id == 1)     // update the platform whenever the host pings the server; In this case the host is client 1
+                    infoMap[id] = input;              // set the data at that id
+                    timeMap[id] = timeLine.getTime(); // set last client report to the current time
+                    // if (id == host)                   // update the platform whenever the host pings the server; In this case the host is client 1
+                    // {
+                    //     hoverY(0, 300, .5); //
+                    // }
+                }
+            }
+        }
+        else if (i == 2) // check timeouts
+        {
+            while (true)
+            {
+                currentTime = timeLine.getTime();
+                for (auto it = timeMap.begin(); it != timeMap.end(); ++it)
+                {
+                    bool isDeleted = false;
+                    for (int i = 0; i < (int)deltedClientId.size(); i++)
                     {
-                        hoverY(0, 300, .5); //
+                        if (deltedClientId[i] == it->first)
+                            isDeleted = true;
+                    }
+                    if (!isDeleted)
+                    {
+                        deltatime = currentTime - it->second;
+                        if (deltatime >= 1000 && deltatime <= 3000)
+                        {
+                            std::cout << "Putting a timeout for: " << it->first << " since the time was: " << deltatime << std::endl;
+                            deltedClientId.push_back(it->first);
+                        }
+                        // else
+                        // {
+                        //     std::cout << "Not deleting : " << it->first << " since delta time was " << deltaTime << std::endl;
+                        // }
                     }
                 }
+            }
+        }
+        else if (i == 3)
+        {
+            while (true)
+            {
+                for (int i = 0; i < (int)deltedClientId.size(); i++)
+                {
+                    infoMap[deltedClientId[i]] = "deleted" + std::to_string(deltedClientId[i]) + "|";
+                }
+            }
+        }
+        else if (i == 4) // create all client info to publish
+        {
+            allInfo = "";
+            for (int i = 1; i <= numClients; i++)
+            {
+                if (infoMap[i] != "")
+                {
+                    allInfo += infoMap[i];
+                }
+            }
+        }
+        else if (i == 5) // platform updater
+        {
+            int64_t currentTime = timeLine.getTime();
+            if (currentTime - prevTime > 10)
+            {
+                hoverY(0, 300, .5);
+                prevTime = currentTime;
+            }
+            platInfo = "";
+            float newY = 550 - valY;
+            float newX = 600 - valY;
+            platInfo += "platform1" + std::to_string(600) + "," + std::to_string(newY) + "|";
+            platInfo += "platform2" + std::to_string(newX) + "," + std::to_string(200) + "|";
+        }
+        else if (i == 6)
+        {
+            while (true)
+            {
+                zmq::context_t context(2);
+                zmq::socket_t socket(context, zmq::socket_type::rep);
+                socket.bind("tcp://*:2332");
+                zmq::message_t request;
+                socket.recv(request, zmq::recv_flags::none);                            // wait to recieve a message from a client
+                std::string input(static_cast<char *>(request.data()), request.size()); // parse that as a string
+                // Send the client's Id to the client
+                const char *input_cstr = input.c_str();
+
+                int id;
+                char event;
+                // char input;
+                sscanf(input_cstr, "%d%c", &id, &event); // scan the first number which is the id
+                if (event == 'D')
+                    std::cout << "Client: " << id << " died" << std::endl;
             }
         }
     }
@@ -149,34 +244,45 @@ int main()
 
     zmq::context_t context(2);
     zmq::socket_t publisher(context, zmq::socket_type::pub);
+    zmq::socket_t publisher2(context, zmq::socket_type::pub);
 
     publisher.bind("tcp://*:6666");
+    publisher2.bind("tcp://*:7667");
 
     std::cout << "Creating the server..." << std::endl;
 
     ThreadRunner t1(1, NULL, &m);
     std::thread first(run_wrapper, &t1);
 
+    ThreadRunner t2(2, NULL, &m); // check timeouts
+    std::thread second(run_wrapper, &t2);
+
+    ThreadRunner t3(3, NULL, &m);
+    std::thread third(run_wrapper, &t3);
+
+    ThreadRunner t4(4, NULL, &m);
+
+    ThreadRunner t5(5, NULL, &m);
+
+    ThreadRunner t6(6, NULL, &m);
+    std::thread sixth(run_wrapper, &t6);
+
+    // ThreadRunner t6(6, NULL, &m);
+    // std::thread six(run_wrapper, &t6);
+
     while (true)
     {
+        std::thread fourth(run_wrapper, &t4);
+        std::thread fifth(run_wrapper, &t5);
 
+        fourth.join();
+        fifth.join();
         // publish all positions and velicites; will have clients render
-        std::string allInfo = "";
-        for (int i = 1; i <= numClients; i++)
-        {
-            if (map[i] != "")
-            {
-                allInfo += map[i];
-            }
-        }
-
-        float newY = 550 - valY;
-        float newX = 600 - valY;
-        allInfo += "platform1" + std::to_string(600) + "," + std::to_string(newY) + "|";
-        allInfo += "platform2" + std::to_string(newX) + "," + std::to_string(200) + "|";
 
         // std::cout << "Published: \n" << allInfo << std::endl;
         publisher.send(zmq::buffer(allInfo), zmq::send_flags::none);
+
+        publisher2.send(zmq::buffer(platInfo), zmq::send_flags::none);
 
         // tell the clients the positions and velocities
         // maybe have a wait or confirms from all the clients before continuing

@@ -6,6 +6,8 @@ Actor::Actor(sf::Shape *shape, sf::Vector2f position, const std::string &texture
     this->id = id;
     spawnX = position.x;
     spawnY = position.y;
+    isGrounded = false;
+    alive = true;
 }
 
 int Actor::getId()
@@ -21,8 +23,17 @@ void Actor::setSpawn(int x, int y)
 
 void Actor::respawn()
 {
-    printf("I just died\n");
+    printf("I just respawned\n");
+    this->setColor("White");
+    alive = true;
     this->positionX = spawnX;
     this->positionY = spawnY;
 
+}
+
+void Actor::kill()
+{
+    printf("I just died\n");
+    alive = false;
+    getShape().setFillColor(sf::Color::Transparent);
 }

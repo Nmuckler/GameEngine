@@ -5,8 +5,11 @@
 #include "Object.hpp"
 #include "DeathZone.hpp"
 #include "GameObject.hpp"
-#include "Bound.hpp"
 #include "Timeline.hpp"
+#include "Bound.hpp"
+#include "EventManager.hpp"
+#include "EventHandler.hpp"
+#include "Event.hpp"
 #include <vector>
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -26,10 +29,15 @@ public:
     static GameManager *getInstance();
     void initialize(sf::View *gameview);
     void updateDeltaTime();
+    void createPlatform(float xsize, float ysize, float xPos, float yPos, const std::string &texturePath);
     void createCharacter(int id);
     void deleteCharacter(int id);
-    void checkInputs(sf::RenderWindow *window); // check input for the specific Client runnning
+    void checkCollisions();
+    void checkDeath();
+    bool checkInputs(sf::RenderWindow *window); // check input for the specific Client runnning
     void parsePos(std::string str);
+    void parseEnv(std::string str);
+
     void setBounds();
     void updateView();
     void render(sf::RenderWindow &window);
@@ -37,11 +45,15 @@ public:
     std::string allToString();
 
     // Accessor method to get a specific game object by index
-    std::vector<Actor *> actorObjects;
-    // std::map<int, Actor*> actorMap;
+    // std::vector<Actor *> actorObjects;
+    std::map<int, Actor*> actorMap;
+    // std::iterator<int, Actor*> it;
     std::vector<GameObject *> gameObjects;
     std::vector<DeathZone *> deathObjects;
     std::vector<Bound *> bounds;
+
+    EventManager *eventManager = EventManager().getInstance();
+    Timeline timeline;
 
     sf::View *gameview;
     float viewLeft;
