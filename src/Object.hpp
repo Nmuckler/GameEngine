@@ -56,7 +56,7 @@ public:
     sf::Texture texture;
     float positionX, positionY;
     float velocityX, velocityY;
-    float gravity = 0.1f;
+    float gravity = 0.2f;
 };
 
 #endif

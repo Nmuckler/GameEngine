@@ -30,6 +30,7 @@ public:
     void initialize(sf::View *gameview);
     void updateDeltaTime();
     void createPlatform(float xsize, float ysize, float xPos, float yPos, const std::string &texturePath);
+    void createDeathZone(float xsize, float ysize, float xPos, float yPos, const std::string &texturePath, std::vector<DeathZone *> &location);
     void createCharacter(int id);
     void deleteCharacter(int id);
     void checkCollisions();
@@ -58,6 +59,11 @@ public:
     sf::View *gameview;
     float viewLeft;
     float viewRight;
+
+
+    //game objects
+    std::vector<DeathZone *> pipes;
+    void movePipes();
 
 private:
     static GameManager *singleton;

@@ -55,6 +55,7 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "csignal": "cpp",
-        "list": "cpp"
+        "list": "cpp",
+        "codecvt": "cpp"
     }
 }

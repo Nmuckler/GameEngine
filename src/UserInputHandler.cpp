@@ -47,27 +47,27 @@ void UserInputHandler::onEvent(Event event)
             event.actor->setSpawn(event.actor->positionX, event.actor->positionY);
         }
 
-        // Controls
-        if (event.booleanArray[6])
-        {
-            // Left key is pressed: move our character to the left
-            // std::cout << "Left key is pressed: move our character to the left" << std::endl;
+        // // Controls
+        // if (event.booleanArray[6])
+        // {
+        //     // Left key is pressed: move our character to the left
+        //     // std::cout << "Left key is pressed: move our character to the left" << std::endl;
 
-            event.actor->moveLeft(moveSpeed);
-        }
-        if (event.booleanArray[7])
-        {
-            // Right key is pressed: move our character to the right
-            // std::cout << "Right key is pressed: move our character to the right" << std::endl;
+        //     event.actor->moveLeft(moveSpeed);
+        // }
+        // if (event.booleanArray[7])
+        // {
+        //     // Right key is pressed: move our character to the right
+        //     // std::cout << "Right key is pressed: move our character to the right" << std::endl;
 
-            event.actor->moveRight(moveSpeed);
-        }
+        //     event.actor->moveRight(moveSpeed);
+        // }
         if (event.booleanArray[8])
         {
-            if (event.actor->isGrounded)
-            {
+            // if (event.actor->isGrounded)
+            // {
                 event.actor->jump();
-            }
+            // }
         }
     }
 }

@@ -33,22 +33,23 @@ void GameManager::initialize(sf::View *view)
     timeline = Timeline();
     gameview = view;
 
-    sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(25000.f, 300.f));
-    sf::RectangleShape *deathtangle2 = new sf::RectangleShape(sf::Vector2f(300.f, 3000.f));
+    // createPlatform(500, 2000, 0, 550, "Red");
+    // createPlatform(250, 30, 600, 550, "Blue");        // moving platform 1 index line 226
+    // createPlatform(250, 30, 600, 200, "Transparent"); // moving platform 2 line 236
+    // createPlatform(500, 2000, -800, 550, "Cyan");
+    // createPlatform(500, 2000, 1000, 550, "Magenta");
 
+    createDeathZone(125, 500, 425, 400, "Green", pipes); //diff must be 700
+    createDeathZone(125, 500, 425, -300, "Green", pipes);
+    createDeathZone(125, 500, 708, 400, "Green", pipes); //diff must be 700
+    createDeathZone(125, 500, 708, -300, "Green", pipes);
+    createDeathZone(125, 500, 991, 400, "Green", pipes); //diff must be 700
+    createDeathZone(125, 500, 991, -300, "Green", pipes);
 
-    createPlatform(500, 2000, 0, 550, "Red");
-    createPlatform(250, 30, 600, 550, "Blue");   // moving platform 1 index line 226
-    createPlatform(250, 30, 600, 200, "Yellow"); // moving platform 2 line 236
-    createPlatform(250, 30, 0, 200, "Green");
-    createPlatform(500, 2000, -800, 550, "Cyan");
-    createPlatform(500, 2000, 1000, 550, "Magenta");
+    // createDeathZone(1250, 10, 0, 0, "Red", deathObjects);
+    createDeathZone(25000, 300, -10000, -200, "Transparent", deathObjects);
 
-    DeathZone *deathzone1 = new DeathZone(deathtangle, sf::Vector2f(-10000, 675), "Transparent");
-    DeathZone *deathzone2 = new DeathZone(deathtangle2, sf::Vector2f(-300, 200), "White");
-
-    deathObjects.push_back(deathzone1);
-    // deathObjects.push_back(deathzone2);
+    createDeathZone(25000, 300, -10000, 675, "Transparent", deathObjects);
 }
 
 void GameManager::updateDeltaTime()
@@ -74,6 +75,24 @@ void GameManager::createPlatform(float xsize, float ysize, float xPos, float yPo
     catch (...)
     {
         std::cerr << "Platform caught exception." << std::endl;
+    }
+}
+
+void GameManager::createDeathZone(float xsize, float ysize, float xPos, float yPos, const std::string &texturePath, std::vector<DeathZone *> &location)
+{
+    try
+    {
+        if(location == deathObjects)
+            printf("death\n");
+        else
+            printf("pipe\n");
+        sf::RectangleShape *line = new sf::RectangleShape(sf::Vector2f(xsize, ysize));
+        DeathZone *platform = new DeathZone(line, sf::Vector2f(xPos, yPos), texturePath);
+        location.push_back(platform);
+    }
+    catch (...)
+    {
+        std::cerr << "Deathbox caught exception." << std::endl;
     }
 }
 
@@ -129,6 +148,17 @@ void GameManager::checkDeath()
         for (int i = 0; i < deathObjects.size(); i++)
         {
             if (actorMap[clientID]->isTouching(deathObjects[i]->getShape()))
+            {
+                Event *death = new Event(Event::DEATH, "DEATH", timeline.getTime() + 0, actorMap[clientID]);
+                eventManager->raise(death);
+                Event *spawn = new Event(Event::SPAWN, "SPAWN", timeline.getTime() + 1000, actorMap[clientID]);
+                eventManager->raise(spawn);
+                break;
+            }
+        }
+        for (int i = 0; i < pipes.size(); i++)
+        {
+            if (actorMap[clientID]->isTouching(pipes[i]->getShape()))
             {
                 Event *death = new Event(Event::DEATH, "DEATH", timeline.getTime() + 0, actorMap[clientID]);
                 eventManager->raise(death);
@@ -291,33 +321,33 @@ void GameManager::parsePos(std::string str)
 
 void GameManager::parseEnv(std::string str)
 {
-    std::istringstream iss(str);
-    std::string clientData;
+    // std::istringstream iss(str);
+    // std::string clientData;
 
-    while (std::getline(iss, clientData, '|'))
-    {
-        // Check if this is client data or platform data
-        if (clientData.substr(0, 9) == "platform1")
-        {
-            float platformX, platformY;
-            if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
-            {
-                if (gameObjects.size() >= 2)
-                    gameObjects[1]->getShape().setPosition(platformX, platformY);
-                // std::cout << "Set position to: " << platformY << std::endl;
-            }
-        }
-        else if (clientData.substr(0, 9) == "platform2")
-        {
-            float platformX, platformY;
-            if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
-            {
-                if (gameObjects.size() >= 3)
-                    gameObjects[2]->getShape().setPosition(platformX, platformY);
-                // std::cout << "Set position to: " << platformY << std::endl;
-            }
-        }
-    }
+    // while (std::getline(iss, clientData, '|'))
+    // {
+    //     // Check if this is client data or platform data
+    //     if (clientData.substr(0, 9) == "platform1")
+    //     {
+    //         float platformX, platformY;
+    //         if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
+    //         {
+    //             if (gameObjects.size() >= 2)
+    //                 gameObjects[1]->getShape().setPosition(platformX, platformY);
+    //             // std::cout << "Set position to: " << platformY << std::endl;
+    //         }
+    //     }
+    //     else if (clientData.substr(0, 9) == "platform2")
+    //     {
+    //         float platformX, platformY;
+    //         if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
+    //         {
+    //             if (gameObjects.size() >= 3)
+    //                 gameObjects[2]->getShape().setPosition(platformX, platformY);
+    //             // std::cout << "Set position to: " << platformY << std::endl;
+    //         }
+    //     }
+    // }
 }
 
 std::string GameManager::toString(int id)
@@ -339,6 +369,27 @@ std::string GameManager::allToString()
     }
 
     return stream;
+}
+
+void GameManager::movePipes()
+{
+    static std::default_random_engine randomEngine(std::random_device{}());
+    static std::uniform_int_distribution<int> newY(255, 590);
+
+    for(int i = 0; i < pipes.size(); i++){
+        // printf("called");
+        if(i % 2 ==0){
+            if(pipes[i]->getShape().getPosition().x <= -425){
+                float f = newY(randomEngine);
+                pipes[i]->getShape().setPosition(425.f, f);
+                pipes[i + 1]->getShape().setPosition(425.f, f - 700);
+            } else {
+                // printf("left");
+                pipes[i]->getShape().move(-1,0);
+                pipes[i + 1]->getShape().move(-1,0);
+            }
+        }
+    }
 }
 
 void GameManager::setBounds()
@@ -405,6 +456,10 @@ void GameManager::render(sf::RenderWindow &window)
     for (int i = 0; i < deathObjects.size(); i++)
     {
         deathObjects[i]->draw(window, hitboxActive);
+    }
+    for (int i = 0; i < pipes.size(); i++) // specifically for this game
+    {
+        pipes[i]->draw(window, hitboxActive);
     }
     for (int i = 0; i < bounds.size(); i++)
     {

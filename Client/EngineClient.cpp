@@ -200,7 +200,7 @@ int main()
             std::thread first(run_wrapper, &t1);
             std::thread second(run_wrapper, &t2);
             std::thread third(run_wrapper, &t3);
-
+            manager->movePipes();
             if (clientID > 0)
             {
                 manager->checkCollisions();
