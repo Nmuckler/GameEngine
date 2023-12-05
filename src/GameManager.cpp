@@ -47,7 +47,7 @@ void GameManager::initialize(sf::View *view)
     createDeathZone(125, 500, 991, -300, "Green", pipes);
 
     // createDeathZone(1250, 10, 0, 0, "Red", deathObjects);
-    createDeathZone(25000, 300, -10000, -200, "Transparent", deathObjects);
+    createDeathZone(250, 300, 0, -400, "Red", deathObjects);
 
     createDeathZone(25000, 300, -10000, 675, "Transparent", deathObjects);
 }
