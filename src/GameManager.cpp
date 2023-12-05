@@ -39,11 +39,11 @@ void GameManager::initialize(sf::View *view)
     // createPlatform(500, 2000, -800, 550, "Cyan");
     // createPlatform(500, 2000, 1000, 550, "Magenta");
 
-    createDeathZone(125, 500, 425, 400, "Green", pipes); //diff must be 700
+    createDeathZone(125, 500, 425, 400, "Green", pipes); // diff must be 700
     createDeathZone(125, 500, 425, -300, "Green", pipes);
-    createDeathZone(125, 500, 708, 400, "Green", pipes); //diff must be 700
+    createDeathZone(125, 500, 708, 400, "Green", pipes); // diff must be 700
     createDeathZone(125, 500, 708, -300, "Green", pipes);
-    createDeathZone(125, 500, 991, 400, "Green", pipes); //diff must be 700
+    createDeathZone(125, 500, 991, 400, "Green", pipes); // diff must be 700
     createDeathZone(125, 500, 991, -300, "Green", pipes);
 
     // createDeathZone(1250, 10, 0, 0, "Red", deathObjects);
@@ -82,7 +82,7 @@ void GameManager::createDeathZone(float xsize, float ysize, float xPos, float yP
 {
     try
     {
-        if(location == deathObjects)
+        if (location == deathObjects)
             printf("death\n");
         else
             printf("pipe\n");
@@ -376,17 +376,22 @@ void GameManager::movePipes()
     static std::default_random_engine randomEngine(std::random_device{}());
     static std::uniform_int_distribution<int> newY(255, 590);
 
-    for(int i = 0; i < pipes.size(); i++){
+    for (int i = 0; i < pipes.size(); i++)
+    {
         // printf("called");
-        if(i % 2 ==0){
-            if(pipes[i]->getShape().getPosition().x <= -425){
+        if (i % 2 == 0)
+        {
+            if (pipes[i]->getShape().getPosition().x <= -425)
+            {
                 float f = newY(randomEngine);
                 pipes[i]->getShape().setPosition(425.f, f);
                 pipes[i + 1]->getShape().setPosition(425.f, f - 700);
-            } else {
+            }
+            else
+            {
                 // printf("left");
-                pipes[i]->getShape().move(-1,0);
-                pipes[i + 1]->getShape().move(-1,0);
+                pipes[i]->getShape().move(-1, 0);
+                pipes[i + 1]->getShape().move(-1, 0);
             }
         }
     }
@@ -437,9 +442,13 @@ void GameManager::updateView()
 
 void GameManager::render(sf::RenderWindow &window)
 {
+    t.loadFromFile("background1.png");
+    sf::Sprite s(t);
+    s.setPosition(-350, 100);
     updateView();
-    window.clear(sf ::Color::Black);
-
+    sf::Color customBlue(0, 153, 204); // RGB values (0, 0, 255) for blue
+    window.clear(customBlue);
+    window.draw(s);
     if (!timeline.isPaused() && actorMap[clientID]->alive)
     {
         actorMap[clientID]->update(sentTime, actorMap[clientID]->isGrounded);

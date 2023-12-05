@@ -64,6 +64,7 @@ public:
     //game objects
     std::vector<DeathZone *> pipes;
     void movePipes();
+    sf::Texture t;
 
 private:
     static GameManager *singleton;
