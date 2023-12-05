@@ -69,5 +69,12 @@ void UserInputHandler::onEvent(Event event)
                 event.actor->jump();
             }
         }
+        if (event.booleanArray[6] && event.booleanArray[7])
+        {
+
+            event.actor->jump();
+            
+        }
+        
     }
 }
