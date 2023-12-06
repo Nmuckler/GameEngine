@@ -204,15 +204,15 @@ int main()
             if (clientID > 0)
             {
                 manager->checkCollisions();
-                manager->checkDeath();
+                // manager->checkDeath();
                 manager->checkInputs(&window);
             }
 
             std::unique_lock<std::mutex> eventlock(manager->eventManager->lock);
             manager->eventManager->processEvents();
-            if(manager->eventManager->calledrespawn){
-                manager->setBounds();
-            }
+            // if(manager->eventManager->calledrespawn){
+            //     manager->setBounds();
+            // }
             std::string newPos = manager->toString(clientID); // send out position
 
             socket.send(zmq::buffer(newPos), zmq::send_flags::none); // send client info to server

@@ -2,7 +2,7 @@
 
 void UserInputHandler::onEvent(Event event)
 {
-    float moveSpeed = 3;
+    float moveSpeed = 4;
     if (event.getEvent() == event.type::COLLISION || event.getEventInfo() == "USERINPUT")
     {
         // std::cout << "I was called" << std::endl;
@@ -52,22 +52,22 @@ void UserInputHandler::onEvent(Event event)
         {
             // Left key is pressed: move our character to the left
             // std::cout << "Left key is pressed: move our character to the left" << std::endl;
-
-            event.actor->moveLeft(moveSpeed);
+            if(event.actor->getShape().getPosition().y > 0)
+                event.actor->moveUp(moveSpeed);
         }
         if (event.booleanArray[7])
         {
             // Right key is pressed: move our character to the right
             // std::cout << "Right key is pressed: move our character to the right" << std::endl;
-
-            event.actor->moveRight(moveSpeed);
+            if(event.actor->getShape().getPosition().y < 475)
+                event.actor->moveDown(moveSpeed);
         }
-        if (event.booleanArray[8])
-        {
-            if (event.actor->isGrounded)
-            {
-                event.actor->jump();
-            }
-        }
+        // if (event.booleanArray[8])
+        // {
+        //     if (event.actor->isGrounded)
+        //     {
+        //         event.actor->jump();
+        //     }
+        // }
     }
 }

@@ -164,7 +164,7 @@ void Object::update(int64_t deltaTime, bool grounded)
     }
     if (!grounded && time < 1000 && time >= 0)
     {
-        velocityY += gravity * time;
+        velocityY *= .5;
     }
 
     if (velocityX != 0)

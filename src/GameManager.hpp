@@ -59,9 +59,10 @@ public:
     float viewLeft;
     float viewRight;
 
+    void updateBall();
+
 private:
     static GameManager *singleton;
-
     GameManager(const GameManager &obj) = delete;
 };
 
