@@ -7,11 +7,18 @@ int64_t lastTime = 0;
 int64_t deltaTime = 0;
 double sentTime = 0;
 
+sf::Text leftscore;
+int leftpoints = 0;
+int rightpoints = 0;
+sf::Text rightscore;
+sf::Font font;
+
+
 sf::RectangleShape *newActorRectangle = new sf::RectangleShape(sf::Vector2f(20.f, 125));
 Actor *player2 = new Actor(newActorRectangle, sf::Vector2f(700, 450), "Random", 2);
 
 sf::CircleShape *newActorCircle = new sf::CircleShape(10.f);
-GameObject *ball = new GameObject(newActorCircle, sf::Vector2f(400, 300), "Random");
+GameObject *ball = new GameObject(newActorCircle, sf::Vector2f(400, 300), "White");
 
 GameManager *GameManager::singleton = nullptr;
 /**
@@ -42,11 +49,11 @@ void GameManager::initialize(sf::View *view)
     sf::RectangleShape *deathtangle = new sf::RectangleShape(sf::Vector2f(25000.f, 300.f));
     sf::RectangleShape *deathtangle2 = new sf::RectangleShape(sf::Vector2f(300.f, 3000.f));
 
-    createPlatform(2000, 2000, -400, 599, "Red");
+    createPlatform(2000, 2000, -400, 599, "Transparent");
     // createPlatform(250, 30, 600, 550, "Blue");   // moving platform 1 index line 226
     // createPlatform(250, 30, 600, 200, "Yellow"); // moving platform 2 line 236
     // createPlatform(500, 2000, -800, 550, "Cyan");
-    createPlatform(2000, 2000, -400, -1999, "Magenta");
+    createPlatform(2000, 2000, -400, -1999, "Transparent");
 
     // DeathZone *deathzone1 = new DeathZone(deathtangle, sf::Vector2f(-10000, 675), "Transparent");
     // DeathZone *deathzone2 = new DeathZone(deathtangle2, sf::Vector2f(-300, 200), "White");
@@ -54,6 +61,22 @@ void GameManager::initialize(sf::View *view)
     // deathObjects.push_back(deathzone1);
     // deathObjects.push_back(deathzone2);
     actorMap[2] = player2;
+    if (!font.loadFromFile("../Retro-Gaming.ttf"))
+    {
+        fprintf(stderr, "Failed to load font: ../Retro-Gaming.ttf\n");
+    }
+    else
+    {
+        printf("Font loaded successfully.\n");
+    }
+    leftscore.setFont(font);
+    rightscore.setFont(font);
+
+    leftscore.setFillColor(sf::Color::White);
+    rightscore.setFillColor(sf::Color::White);
+
+    leftscore.setPosition(300, 100);
+    rightscore.setPosition(500, 100);
 }
 
 void GameManager::updateDeltaTime()
@@ -182,34 +205,6 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
             inputs[1] = true;
         }
 
-        // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
-        // {
-        //     // printf("one pressed");
-        //     // timeline.changeTic(4);
-        //     newInput = true;
-        //     inputs[2] = true;
-        // }
-        // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-        // {
-        //     // printf("two pressed");
-        //     // timeline.changeTic(2);
-        //     newInput = true;
-        //     inputs[3] = true;
-        // }
-        // // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
-        // // {
-        // //     // printf("three pressed");
-        // //     // timeline.changeTic(1);
-        // //     newInput = true;
-        // //     inputs[4] = true;
-        // // }
-        // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num8))
-        // {
-        //     // actorMap[idx]->setSpawn(actorMap[idx]->positionX, actorMap[idx]->positionY);
-        //     newInput = true;
-        //     inputs[5] = true;
-        // }
-
         // Controls
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
         {
@@ -225,15 +220,7 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
             newInput = true;
             inputs[7] = true;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
-        {
-            // if (actorMap[idx]->isGrounded)
-            // {
-            //     actorMap[idx]->jump();
-            // }
-            newInput = true;
-            inputs[8] = true;
-        }
+
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
         {
             // Left key is pressed: move our character to the left
@@ -246,7 +233,7 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
         {
             // Right key is pressed: move our character to the right
-            if (actorMap[2]->getShape().getPosition().y < 450)
+            if (actorMap[2]->getShape().getPosition().y < 475)
                 actorMap[2]->getShape().move(0, moveSpeed);
             // printf("Down\n");
             // newInput = true;
@@ -260,13 +247,6 @@ bool GameManager::checkInputs(sf::RenderWindow *window)
     }
     if (newInput)
     {
-        // std::cout << "Sending new input" << std::endl;
-        // std::cout << "booleanArray: ";
-        // for (int i = 0; i < 15; ++i)
-        // {
-        //     std::cout << inputs[i] << " ";
-        // }
-        // std::cout << std::endl;
         Event *userinput = new Event(Event::USERINPUT, "USERINPUT", timeline.getTime() + 0, actorMap[clientID], inputs, &timeline);
         eventManager->raise(userinput);
     }
@@ -315,33 +295,6 @@ void GameManager::parsePos(std::string str)
 
 void GameManager::parseEnv(std::string str)
 {
-    // std::istringstream iss(str);
-    // std::string clientData;
-
-    // while (std::getline(iss, clientData, '|'))
-    // {
-    //     // Check if this is client data or platform data
-    //     if (clientData.substr(0, 9) == "platform1")
-    //     {
-    //         float platformX, platformY;
-    //         if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
-    //         {
-    //             if (gameObjects.size() >= 2)
-    //                 gameObjects[1]->getShape().setPosition(platformX, platformY);
-    //             // std::cout << "Set position to: " << platformY << std::endl;
-    //         }
-    //     }
-    //     else if (clientData.substr(0, 9) == "platform2")
-    //     {
-    //         float platformX, platformY;
-    //         if (sscanf(clientData.c_str() + 9, "%f,%f", &platformX, &platformY) == 2)
-    //         {
-    //             if (gameObjects.size() >= 3)
-    //                 gameObjects[2]->getShape().setPosition(platformX, platformY);
-    //             // std::cout << "Set position to: " << platformY << std::endl;
-    //         }
-    //     }
-    // }
 }
 
 std::string GameManager::toString(int id)
@@ -388,32 +341,22 @@ void GameManager::setBounds()
 }
 void GameManager::updateView()
 {
-    // double time = sentTime / 10;
-    // if (time < 100 && time >= 0)
-    // {
-    //     float xVel = time * actorMap[clientID]->velocityX;
-
-    //     if (actorMap[clientID]->isTouching(bounds[0]->getShape()) && xVel < 0)
-    //     {
-    //         gameview->move(xVel, 0);
-    //         bounds[1]->getShape().move(xVel, 0);
-    //         bounds[0]->getShape().move(xVel, 0);
-    //     }
-    //     else if (actorMap[clientID]->isTouching(bounds[1]->getShape()) && xVel > 0)
-    //     {
-    //         gameview->move(xVel, 0);
-    //         bounds[1]->getShape().move(xVel, 0);
-    //         bounds[0]->getShape().move(xVel, 0);
-    //     }
-    // }
 }
 
 void GameManager::updateBall()
 {
+    static std::default_random_engine randomEngine(std::random_device{}());
+    static std::uniform_int_distribution<int> ballpos(100, 400);
+    int newpos = ballpos(randomEngine);
     float xpos = ball->getShape().getPosition().x;
-    if(xpos < 0 || xpos > 800){
-        ball->getShape().setPosition(400, 400);
-         ball->velocityX *= -1;
+    if (xpos < 0 || xpos > 800)
+    {
+        if(xpos < 0)
+            rightpoints++;
+        else
+            leftpoints++;
+        ball->getShape().setPosition(400, newpos);
+        ball->velocityX *= -1;
     }
     if (ball->velocityY > 0)
     {
@@ -429,7 +372,6 @@ void GameManager::updateBall()
             ball->velocityY *= -1;
         }
     }
-
 
     if (ball->velocityX > 0)
     {
@@ -447,7 +389,7 @@ void GameManager::updateBall()
     }
     else
     {
-        ball->velocityX = 1;
+        ball->velocityX = 1.25;
         ball->velocityY = 1;
     }
     ball->getShape().move(ball->velocityX * moveSpeed, ball->velocityY * moveSpeed);
@@ -481,7 +423,13 @@ void GameManager::render(sf::RenderWindow &window)
     {
         bounds[i]->draw(window, hitboxActive);
     }
+    std::string rightString = std::to_string(rightpoints);
+    std::string leftString = std::to_string(leftpoints);
+    leftscore.setString(leftString);
+    rightscore.setString(rightString);
 
+    window.draw(leftscore);
+    window.draw(rightscore);
     // updateView();
     // window.setView(*gameview);
     window.display();
